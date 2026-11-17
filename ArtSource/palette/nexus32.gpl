@@ -1,0 +1,36 @@
+GIMP Palette
+Name: nexus32
+Columns: 8
+#
+ 15  13  12	outline_black #0f0d0c
+ 30  26  23	outline #1e1a17
+ 46  38  32	dark_brown #2e2620
+ 74  52  40	rust1 #4a3428
+107  74  53	rust2 #6b4a35
+140  95  63	rust3 #8c5f3f
+176 122  79	rust4 #b07a4f
+210 156 106	rust5 #d29c6a
+ 59  61  64	ash1 #3b3d40
+ 87  90  92	ash2 #575a5c
+123 125 122	ash3 #7b7d7a
+163 163 155	ash4 #a3a39b
+201 198 184	ash5 #c9c6b8
+232 227 211	ash6 #e8e3d3
+122 106  79	dust1 #7a6a4f
+160 139  99	dust2 #a08b63
+196 173 127	dust3 #c4ad7f
+ 47  58  36	moss1 #2f3a24
+ 76  92  50	moss2 #4c5c32
+115 132  63	moss3 #73843f
+ 92  31  26	red1 #5c1f1a
+142  47  34	red2 #8e2f22
+194  72  44	red3 #c2482c
+224 122  60	red4 #e07a3c
+242 184  75	light1 #f2b84b
+255 224 138	light2 #ffe08a
+ 27  15  58	neon_deep #1b0f3a
+ 75  31 140	neon_violet #4b1f8c
+138  63 242	neon_purple #8a3ff2
+ 43 217 201	neon_cyan #2bd9c9
+143 247 232	neon_ice #8ff7e8
+242  95 208	neon_pink #f25fd0
