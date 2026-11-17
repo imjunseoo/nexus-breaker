@@ -65,6 +65,8 @@ namespace NexusBreaker
             quit.GetComponent<RectTransform>().Place(300, 88, 78, 14);
             var hint = Ui.Text(rt, "Hint", "오른쪽 위 핀 버튼을 끌면 창이 움직여요", 8f, Palette.Ash2);
             hint.rectTransform.Place(6, 68, 130, 10);
+            var version = Ui.Text(rt, "Version", $"버전 {Application.version}", 8f, Palette.Ash3);
+            version.rectTransform.Place(6, 82, 120, 10);
         }
 
         void MakeVolume(RectTransform rt, string label, float y, float value, UnityEngine.Events.UnityAction<float> onChange)
