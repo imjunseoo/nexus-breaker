@@ -9,7 +9,7 @@
 화면 아래쪽에 띠처럼 붙어서 일하는 동안 곁눈질로 즐기는 게임입니다. 상점이나 강화를 열면 창이 위로 늘어나고,
 오른쪽 **손님 방명록**에는 손님들의 한마디가 방송 채팅처럼 올라와요(끌 수 있음).
 
-**[⬇ 베타 다운로드 (Windows)](https://github.com/imjunseoo/nexus-breaker/releases/latest)**
+**[⬇ 베타 다운로드 (Windows)](https://github.com/imjunseoo/nexus-breaker/releases)** — 가장 위의 최신 버전 zip을 받으세요
 
 | 상점 — 창고 · 진열대 · 가격 정하기 | 강화 |
 |---|---|
