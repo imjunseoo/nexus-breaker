@@ -165,6 +165,7 @@ namespace NexusBreaker
             "ui_button" => 5,
             "ui_slot" => 4,
             "ui_bar" => 2,
+            "ui_chat" => 8,
             _ => 0,
         };
 

@@ -8,6 +8,8 @@ namespace NexusBreaker
         public const int StripW = 384;
         public const int StripH = 96;
         public const int PageH = 120;          // 상점/강화 페이지가 열릴 때 위에 추가되는 높이
+        public const int ChatW = 160;          // 띠 오른쪽에 붙는 손님 방명록(채팅) 패널 폭
+        public const int FrameW = StripW + ChatW; // 창 전체 폭(내부 픽셀)
         public const float PPU = 32f;
 
         public static float HalfW => StripW / PPU / 2f;   // 6

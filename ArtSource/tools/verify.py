@@ -38,6 +38,7 @@ SPEC = {
     "UI/ui_bar.aseprite": (64, 8, {"frame": (1, None), "fill": (1, None)}),
     "UI/ui_icons.aseprite": (16, 16, {n: (1, None) for n in "nut hammer helper speed crit box warehouse shelf customer shop settings prestige_core close pin ghost".split()}),
     "UI/ui_nut_small.aseprite": (8, 8, None),
+    "UI/ui_chat.aseprite": (32, 32, None),  # added on request (guest-book speech bubble)
 }
 for b in "common uncommon rare alien unknown".split():
     SPEC[f"Boxes/box_{b}.aseprite"] = (16, 16, {"idle": (2, 300), "open": (5, 70)})

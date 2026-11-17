@@ -66,8 +66,8 @@ namespace NexusBreaker
             _boxes.rectTransform.Stretch();
 
             // 오른쪽 위 아이콘 버튼
-            MakeIconButton(rt, "BtnShop", "shop", "상", 310, () => _root.TogglePage(UiRoot.Page.Shop));
-            MakeIconButton(rt, "BtnUpgrade", "hammer", "강", 328, () => _root.TogglePage(UiRoot.Page.Upgrade));
+            UiTargets.Register("btn_shop", MakeIconButton(rt, "BtnShop", "shop", "상", 310, () => _root.TogglePage(UiRoot.Page.Shop)));
+            UiTargets.Register("btn_upgrade", MakeIconButton(rt, "BtnUpgrade", "hammer", "강", 328, () => _root.TogglePage(UiRoot.Page.Upgrade)));
             MakeIconButton(rt, "BtnSettings", "settings", "설", 346, () => _root.TogglePage(UiRoot.Page.Settings));
             var grip = Ui.Button(rt, "Grip", a.UiIcon("pin") != null ? "" : "≡", null, a.UiIcon("pin"));
             grip.GetComponent<RectTransform>().Place(364, 3, 16, 16);
@@ -77,11 +77,12 @@ namespace NexusBreaker
             Refresh(true);
         }
 
-        void MakeIconButton(RectTransform parent, string name, string icon, string fallbackLabel, float x, UnityEngine.Events.UnityAction onClick)
+        Button MakeIconButton(RectTransform parent, string name, string icon, string fallbackLabel, float x, UnityEngine.Events.UnityAction onClick)
         {
             var sprite = GameAssets.Instance.UiIcon(icon);
             var b = Ui.Button(parent, name, sprite != null ? "" : fallbackLabel, onClick, sprite);
             b.GetComponent<RectTransform>().Place(x, 3, 16, 16);
+            return b;
         }
 
         void Update()

@@ -39,8 +39,14 @@ namespace NexusBreaker
         /// <summary>모델 생성 직후 호출.</summary>
         public static void ApplyDemo(GameModel m)
         {
+            ApplyTutorialStep(m);
+            if (Flag("-nbNoChat")) m.Data.settings.showChat = false; // 방명록 끈 상태 확인용
+            // -nbOffline 초: 그만큼 꺼져 있었던 것처럼 → 오프라인 정산 팝업 확인용
+            if (double.TryParse(Arg("-nbOffline"), NumberStyles.Float, CultureInfo.InvariantCulture, out double away))
+                m.Data.lastSaveUnix = SaveSystem.NowUnix - (long)away;
             if (!Flag("-nbDemo")) return;
             var d = m.Data;
+            if (Arg("-nbTutorialStep") == null) d.tutorialStep = -1; // 보여주기용 화면에는 튜토리얼을 띄우지 않음
             d.nuts = 12345;
             d.nexusHp = d.nexusMaxHp * 0.853;
             d.nextMilestonePercent = 85;
@@ -65,14 +71,36 @@ namespace NexusBreaker
                 if (!d.codex.Contains(id)) d.codex.Add(id);
         }
 
+        /// <summary>-nbTutorialStep n: 튜토리얼 n단계 화면을 바로 확인하기 위한 상태 준비.</summary>
+        static void ApplyTutorialStep(GameModel m)
+        {
+            if (!int.TryParse(Arg("-nbTutorialStep"), out int step)) return;
+            var d = m.Data;
+            d.tutorialStep = step;
+            if (step >= 2 && step <= 3 && m.BoxCount == 0) d.boxes[0] = 2;
+            if (step >= 4 && step <= 6 && m.ItemCountInWarehouse == 0) d.warehouse.Add(new ItemStack { id = "cup_ramen", count = 2 });
+            if (step >= 6 && m.OccupiedShelfCount == 0) m.PlaceOnShelf("cup_ramen", 25);
+            if (step == 7) d.nuts = Math.Max(d.nuts, 40);
+        }
+
+        static UiRoot.Page ParsePage(string s) => (s ?? "").ToLowerInvariant() switch
+        {
+            "shop" => UiRoot.Page.Shop,
+            "upgrade" => UiRoot.Page.Upgrade,
+            "settings" => UiRoot.Page.Settings,
+            _ => UiRoot.Page.None,
+        };
+
         public static void AfterBuild(UiRoot ui)
         {
-            switch ((Arg("-nbPage") ?? "").ToLowerInvariant())
+            var page = ParsePage(Arg("-nbPage"));
+            // -nbPageAfter 초: 창을 옮긴 뒤 페이지를 여는 상황 재현용(창 위치 유지 검증)
+            if (page != UiRoot.Page.None && float.TryParse(Arg("-nbPageAfter"), NumberStyles.Float, CultureInfo.InvariantCulture, out float after))
             {
-                case "shop": ui.OpenPage(UiRoot.Page.Shop); break;
-                case "upgrade": ui.OpenPage(UiRoot.Page.Upgrade); break;
-                case "settings": ui.OpenPage(UiRoot.Page.Settings); break;
+                var pg = new GameObject("DebugAutomationPage");
+                pg.AddComponent<DebugAutomation>().StartCoroutine(OpenPageLater(ui, page, after));
             }
+            else if (page != UiRoot.Page.None) ui.OpenPage(page);
             float delay = 4f;
             if (float.TryParse(Arg("-nbDelay"), NumberStyles.Float, CultureInfo.InvariantCulture, out var dl)) delay = dl;
 
@@ -90,6 +118,13 @@ namespace NexusBreaker
             if (string.IsNullOrEmpty(shot)) return;
             var go = new GameObject("DebugAutomation");
             go.AddComponent<DebugAutomation>().StartCoroutine(ShotAndQuit(shot, delay));
+        }
+
+        static IEnumerator OpenPageLater(UiRoot ui, UiRoot.Page page, float after)
+        {
+            yield return new WaitForSecondsRealtime(after);
+            ui.OpenPage(page);
+            Debug.Log($"[DebugAutomation] 페이지 열기: {page}");
         }
 
         /// <summary>GIF용 연속 캡처: folder/frame_000.png … 를 저장하고 종료.</summary>

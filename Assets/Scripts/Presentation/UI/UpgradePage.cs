@@ -44,17 +44,18 @@ namespace NexusBreaker
                 var icon = Ui.Image(bg.rectTransform, "Icon", GameAssets.Instance.UiIcon(def.Icon) ?? Placeholder.Get(Placeholder.Shape.Circle, 10, 10, Palette.Rust3, Palette.Outline, false));
                 icon.rectTransform.Place(2, 2, 13, 13);
 
-                // 이름(10px)과 효과(8px)를 위아래로 겹치지 않게 위쪽 정렬로 배치
-                row.Name = Ui.Text(bg.rectTransform, "Name", "", Ui.SmallFont, Palette.Ash5, TextAlignmentOptions.TopLeft);
-                row.Name.rectTransform.Place(17, -1, 110, 10);
-                row.Effect = Ui.Text(bg.rectTransform, "Effect", "", 8f, Palette.Ash3, TextAlignmentOptions.TopLeft);
-                row.Effect.rectTransform.Place(17, 8, 112, 9);
+                // 이름(10px, 위 절반)과 효과(8px, 아래 절반)를 글자 모양 기준으로 각 칸 가운데에
+                row.Name = Ui.Text(bg.rectTransform, "Name", "", Ui.SmallFont, Palette.Ash5, TextAlignmentOptions.MidlineLeft).Fit();
+                row.Name.rectTransform.Place(17, 0, 110, 10);
+                row.Effect = Ui.Text(bg.rectTransform, "Effect", "", 8f, Palette.Ash3, TextAlignmentOptions.MidlineLeft).Fit();
+                row.Effect.rectTransform.Place(17, 10, 112, 7);
 
                 UpgradeId id = def.Id;
                 row.Buy = Ui.Button(bg.rectTransform, "Buy", "-", () => Buy(id), null, 8f); // 라벨이 있어야 Text가 생성됨
                 row.Buy.GetComponent<RectTransform>().Place(130, 2, 54, 13);
                 row.BuyLabel = row.Buy.GetComponentInChildren<TextMeshProUGUI>();
                 _rows.Add(row);
+                UiTargets.Register("upgrade_buy_" + def.Id, row.Buy);
             }
             model.EconomyChanged += () => _dirty = true;
         }
@@ -89,7 +90,8 @@ namespace NexusBreaker
                 {
                     double cost = _model.UpgradeCost(r.Def.Id);
                     bool afford = _model.Data.nuts >= cost;
-                    r.BuyLabel.text = Ui.Colorize(BigNum.Price(cost), afford ? Palette.Lamp1 : Palette.Red3);
+                    // 주황 버튼 위에서 읽히도록 짙은 색만 사용: 살 수 있으면 짙은 갈색, 모자라면 짙은 빨강
+                    r.BuyLabel.text = Ui.Colorize(BigNum.Price(cost), afford ? Ui.ButtonTextColor : Palette.Red0);
                     r.Buy.interactable = afford;
                 }
             }

@@ -61,6 +61,27 @@ namespace NexusBreaker
             return true;
         }
 
+        /// <summary>
+        /// 창고 물건을 빈 진열대 칸에 전부 시장가(×mult)로 진열한다. 칸이 모자라면 비싼 물건부터. 진열한 개수를 돌려준다.
+        /// </summary>
+        public int PlaceAllAtMarket(double mult = 1d)
+        {
+            var stacks = new List<ItemStack>(Data.warehouse);
+            stacks.Sort((a, b) => MarketPrice(b.id).CompareTo(MarketPrice(a.id)));
+            int placed = 0;
+            foreach (var s in stacks)
+            {
+                string id = s.id;
+                while (CountOf(id) > 0 && FirstEmptySlot() >= 0)
+                {
+                    if (!PlaceOnShelf(id, MarketPrice(id) * mult)) break;
+                    placed++;
+                }
+                if (FirstEmptySlot() < 0) break;
+            }
+            return placed;
+        }
+
         public int FirstEmptySlot()
         {
             for (int i = 0; i < Data.shelf.Count; i++) if (Data.shelf[i].IsEmpty) return i;
@@ -121,6 +142,12 @@ namespace NexusBreaker
             };
             _visits.Add(visit);
             CustomerArrived?.Invoke(visit);
+        }
+
+        /// <summary>다음 손님이 늦어도 seconds 안에 오게 한다(튜토리얼에서 첫 판매를 빨리 보여주기 위함).</summary>
+        public void HurryNextCustomer(double seconds = 1.5d)
+        {
+            if (_customerTimer > seconds) _customerTimer = seconds;
         }
 
         CustomerDef PickCustomer()

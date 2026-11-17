@@ -153,7 +153,7 @@ def main():
     S.add("Environment — shop_stall idle (4) / props", S.row(env["shop_stall"] + [env["props"][0]], 2))
     # UI (multi-state files use one 1-frame tag per state/icon)
     ui_ims, ui_labs = [], []
-    for n in ("ui_panel", "ui_panel_dark", "ui_button", "ui_slot", "ui_bar", "ui_nut_small"):
+    for n in ("ui_panel", "ui_panel_dark", "ui_chat", "ui_button", "ui_slot", "ui_bar", "ui_nut_small"):
         f, tg = frames_of(f"UI/{n}.aseprite")
         if tg:
             for t, (a0, _) in tg.items():

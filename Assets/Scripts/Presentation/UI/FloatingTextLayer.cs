@@ -28,7 +28,7 @@ namespace NexusBreaker
         public void Spawn(Vector3 world, string text, Color32 color)
         {
             if (_active.Count >= MaxActive) Recycle(0);
-            var t = _pool.Count > 0 ? _pool.Pop() : Ui.Text(_rt, "Float", "", Ui.SmallFont, color, TextAlignmentOptions.Center);
+            var t = _pool.Count > 0 ? _pool.Pop() : Ui.Text(_rt, "Float", "", Ui.SmallFont, color, TextAlignmentOptions.Midline);
             t.gameObject.SetActive(true);
             t.text = text;
             t.color = color;

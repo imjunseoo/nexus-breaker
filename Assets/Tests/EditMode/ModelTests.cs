@@ -81,6 +81,22 @@ namespace NexusBreaker.Tests
         }
 
         [Test]
+        public void PlaceAllAtMarket_FillsEmptySlots_MostValuableFirst()
+        {
+            var m = NewModel();
+            m.Data.warehouse.Add(new ItemStack { id = "snack_shrimp", count = 5 });
+            m.Data.warehouse.Add(new ItemStack { id = "medkit", count = 1 });
+            m.Data.warehouse.Add(new ItemStack { id = "battery", count = 2 });
+            int slots = m.Data.shelf.Count; // 6
+            int placed = m.PlaceAllAtMarket();
+            Assert.AreEqual(slots, placed);
+            Assert.AreEqual(0, m.CountOf("medkit"), "비싼 물건이 먼저 진열돼야 한다");
+            Assert.AreEqual(0, m.CountOf("battery"));
+            Assert.AreEqual(2, m.CountOf("snack_shrimp"));
+            foreach (var s in m.Data.shelf) Assert.AreEqual(m.MarketPrice(s.itemId), s.price, 0.5);
+        }
+
+        [Test]
         public void ExpectedSellTime_IncreasesWithPrice()
         {
             var m = NewModel();
@@ -130,6 +146,28 @@ namespace NexusBreaker.Tests
             Assert.AreEqual(0d, m.Data.nuts);
             Assert.AreEqual(RegionCatalog.MaxHp(1), m.Data.nexusHp);
             Assert.Contains("diary", m.Data.codex);
+        }
+
+        [Test]
+        public void Tutorial_PrimeFirstBox_DropsAfterFewHits()
+        {
+            var m = NewModel();
+            m.PrimeFirstBox(3);
+            for (int i = 0; i < 3; i++) m.Click();
+            Assert.AreEqual(1, m.BoxCount);
+        }
+
+        [Test]
+        public void Tutorial_HurryNextCustomer_ArrivesQuickly()
+        {
+            var m = NewModel();
+            int arrived = 0;
+            m.CustomerArrived += _ => arrived++;
+            m.Tick(2.5); // 첫 손님(2초) 소비
+            arrived = 0;
+            m.HurryNextCustomer(0.5);
+            m.Tick(0.6);
+            Assert.GreaterOrEqual(arrived, 1);
         }
 
         [Test]

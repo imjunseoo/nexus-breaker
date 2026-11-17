@@ -54,6 +54,8 @@ namespace NexusBreaker
             AudioManager.Create(Model);
             World.FloatText = (pos, text, color) => Ui.Floating.Spawn(pos, text, color);
 
+            TutorialView.Create(Ui, Model, World, _cam);
+
             _window = DesktopWindow.Create(Model.Data.settings);
             _window.IsInteractiveAt = IsInteractiveAt;
             Ui.PageChanged += _ => ApplyWindowSettings();
@@ -85,7 +87,7 @@ namespace NexusBreaker
             World.SetTransparentBackground(s.transparentBackground);
             // 투명 모드에서는 순수 검정이 컬러키(=투명)
             _cam.backgroundColor = s.transparentBackground ? new Color(0f, 0f, 0f, 0f) : (Color)Palette.Black;
-            _window.Apply(WorldLayout.StripW, Ui.FrameHeightPx);
+            _window.Apply(Ui.FrameWidthPx, Ui.FrameHeightPx);
             Ui.UpdateLayout();
         }
 

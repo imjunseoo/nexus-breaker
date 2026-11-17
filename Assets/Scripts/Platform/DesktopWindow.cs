@@ -30,6 +30,7 @@ namespace NexusBreaker
         bool _pendingApply;
         float _lastApplyTime;
         int _reapplies;
+        bool _placed; // 한 번 자리를 잡은 뒤에는 현재 창 위치를 기준으로 크기만 바꾼다
         bool _clickThroughActive;
         bool _dragging;
         Vector2Int _dragStartCursor, _dragStartWindow;
@@ -58,22 +59,32 @@ namespace NexusBreaker
             int scale = Mathf.Clamp(_settings.windowScale, 1, 6);
             int w = frameW * scale, h = frameH * scale;
 
-            // 현재 창의 아래쪽 가장자리를 기준으로 위로 늘이기/줄이기
+            // 위치 기준:
+            //  - 한 번 자리를 잡은 뒤에는 "지금 창이 실제로 있는 곳"(왼쪽·아래쪽 가장자리)을 기준으로 크기만 바꾼다
+            //    → 끌어서 옮긴 뒤 상점/설정을 열어도 제자리에서 위로 늘어난다
+            //  - 처음 실행 때만 저장된 위치(없으면 작업 영역 오른쪽 아래)를 쓴다
             GetWindowRect(_hwnd, out RECT cur);
-            RECT work = WorkArea();
-            int x, y;
-            if (_settings.windowX == int.MinValue || _settings.windowY == int.MinValue)
+            int x, bottom;
+            if (_placed && cur.Right > cur.Left && cur.Bottom > cur.Top)
             {
-                x = work.Right - w - 8;
-                y = work.Bottom - h;
+                x = cur.Left;
+                bottom = cur.Bottom;
+            }
+            else if (_settings.windowX != int.MinValue && (_settings.windowBottom != int.MinValue || _settings.windowY != int.MinValue))
+            {
+                x = _settings.windowX;
+                bottom = _settings.windowBottom != int.MinValue ? _settings.windowBottom : _settings.windowY + h;
             }
             else
             {
-                x = _settings.windowX;
-                int bottom = cur.Bottom > cur.Top ? cur.Bottom : _settings.windowY + h;
-                y = bottom - h;
+                RECT start = WorkAreaNear(cur.Left + (cur.Right - cur.Left) / 2, cur.Top + (cur.Bottom - cur.Top) / 2);
+                x = start.Right - w - 8;
+                bottom = start.Bottom;
             }
-            // 작업 영역 안으로 클램프
+            int y = bottom - h;
+
+            // 창이 있는 모니터(여러 대면 가장 가까운 모니터)의 작업 영역 안으로 클램프
+            RECT work = WorkAreaNear(x + w / 2, bottom - 1);
             x = Mathf.Clamp(x, work.Left, Mathf.Max(work.Left, work.Right - w));
             y = Mathf.Clamp(y, work.Top, Mathf.Max(work.Top, work.Bottom - h));
 
@@ -85,10 +96,18 @@ namespace NexusBreaker
             else { var zero = new MARGINS(); DwmExtendFrameIntoClientArea(_hwnd, ref zero); }
 
             IntPtr after = _settings.alwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST;
-            SetWindowPos(_hwnd, after, x, y, w, h, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-            _settings.windowX = x;
-            _settings.windowY = y;
+            bool ok = SetWindowPos(_hwnd, after, x, y, w, h, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+            GetWindowRect(_hwnd, out RECT res);
+            Debug.Log($"[Window] t={Time.unscaledTime:0.00} apply {w}x{h} @({x},{y}) placed={_placed} ok={ok} → rect ({res.Left},{res.Top})-({res.Right},{res.Bottom}) screen {Screen.width}x{Screen.height}");
+            SavePosition(x, y, y + h);
 #endif
+        }
+
+        void SavePosition(int left, int top, int bottom)
+        {
+            _settings.windowX = left;
+            _settings.windowY = top;
+            _settings.windowBottom = bottom;
         }
 
         void Update()
@@ -99,7 +118,10 @@ namespace NexusBreaker
 
             // 시작 직후 Unity가 저장된 해상도로 창 크기를 다시 덮어쓰는 경우가 있어, 크기가 다르면 몇 번 재적용
             int scale = Mathf.Clamp(_settings.windowScale, 1, 6);
-            if (!_dragging && (Screen.width != _frameW * scale || Screen.height != _frameH * scale)
+            bool sizeOk = Screen.width == _frameW * scale && Screen.height == _frameH * scale;
+            // 시작 직후 Unity가 창을 다시 잡는 동안은 저장 위치를 고수하고, 크기가 맞춰진 뒤부터 "현재 위치" 기준으로 전환
+            if (sizeOk && !_placed && Time.unscaledTime - _lastApplyTime > 0.3f) _placed = true;
+            if (!_dragging && !sizeOk
                 && Time.unscaledTime - _lastApplyTime > 0.5f && _reapplies < 20)
             {
                 _reapplies++;
@@ -113,7 +135,12 @@ namespace NexusBreaker
                     int nx = _dragStartWindow.x + (p.X - _dragStartCursor.x);
                     int ny = _dragStartWindow.y + (p.Y - _dragStartCursor.y);
                     SetWindowPos(_hwnd, IntPtr.Zero, nx, ny, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                    // 끌기 끝 이벤트를 놓쳐도 위치가 남도록 끄는 동안 계속 저장
+                    if (GetWindowRect(_hwnd, out RECT dr)) SavePosition(dr.Left, dr.Top, dr.Bottom);
                 }
+                // 마우스 버튼을 놓았는데 끌기 끝 이벤트가 안 왔으면 여기서 끝낸다
+                var mouse = UnityEngine.InputSystem.Mouse.current;
+                if (mouse != null && !mouse.leftButton.isPressed) EndDrag();
                 return;
             }
 
@@ -156,11 +183,7 @@ namespace NexusBreaker
         {
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
             _dragging = false;
-            if (_hwnd != IntPtr.Zero && GetWindowRect(_hwnd, out RECT r))
-            {
-                _settings.windowX = r.Left;
-                _settings.windowY = r.Top;
-            }
+            if (_hwnd != IntPtr.Zero && GetWindowRect(_hwnd, out RECT r)) SavePosition(r.Left, r.Top, r.Bottom);
 #endif
         }
 
@@ -213,12 +236,21 @@ namespace NexusBreaker
             else SetLayeredWindowAttributes(_hwnd, 0, 255, LWA_ALPHA);
         }
 
-        static RECT WorkArea()
+        /// <summary>점(화면 좌표)이 있는 모니터의 작업 영역(작업 표시줄 제외). 모니터 밖이면 가장 가까운 모니터.</summary>
+        static RECT WorkAreaNear(int x, int y)
         {
+            IntPtr mon = MonitorFromPoint(new POINT { X = x, Y = y }, MONITOR_DEFAULTTONEAREST);
+            var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+            if (mon != IntPtr.Zero && GetMonitorInfo(mon, ref mi)) return mi.rcWork;
             var r = new RECT();
-            SystemParametersInfo(SPI_GETWORKAREA, 0, ref r, 0);
+            SystemParametersInfo(SPI_GETWORKAREA, 0, ref r, 0); // 실패 시 주 모니터
             return r;
         }
+
+        const uint MONITOR_DEFAULTTONEAREST = 2;
+        [StructLayout(LayoutKind.Sequential)] struct MONITORINFO { public int cbSize; public RECT rcMonitor; public RECT rcWork; public uint dwFlags; }
+        [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(POINT pt, uint flags);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO mi);
 
         const int GWL_STYLE = -16, GWL_EXSTYLE = -20;
         const long WS_POPUP = 0x80000000L, WS_VISIBLE = 0x10000000L;

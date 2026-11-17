@@ -43,9 +43,11 @@ namespace NexusBreaker
         public bool transparentBackground = false;
         public bool alwaysOnTop = true;
         public bool clickThrough = false;
+        public bool showChat = true;          // 오른쪽 손님 방명록 패널(끄면 창 폭이 게임 화면만큼 줄어든다)
         public int windowScale = 3;
-        public int windowX = int.MinValue; // MinValue = 기본 위치(작업 영역 오른쪽 아래)
-        public int windowY = int.MinValue;
+        public int windowX = int.MinValue;      // 창 왼쪽(화면 좌표). MinValue = 기본 위치(작업 영역 오른쪽 아래)
+        public int windowY = int.MinValue;      // (구버전) 창 위쪽 — windowBottom이 없을 때만 참고
+        public int windowBottom = int.MinValue; // 창 아래쪽 가장자리. 페이지를 열고 닫아도 이 선을 기준으로 위로 늘고 줄어든다
     }
 
     [Serializable]
@@ -84,6 +86,9 @@ namespace NexusBreaker
         public string activeEventId;
         public double activeEventRemaining;
         public double marketTimer;
+
+        // 튜토리얼: 0부터 단계 진행, -1 = 완료 또는 건너뜀
+        public int tutorialStep;
 
         // 기타
         public List<string> codex = new List<string>(); // 발견한 아이템 id

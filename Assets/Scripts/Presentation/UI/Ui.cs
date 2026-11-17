@@ -110,9 +110,19 @@ namespace NexusBreaker
         {
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(x, -y);
-            rt.sizeDelta = new Vector2(w, h);
+            // 정수 픽셀로 맞춰야 픽셀 폰트·도트가 반 픽셀씩 어긋나지 않는다
+            rt.anchoredPosition = new Vector2(Mathf.Round(x), -Mathf.Round(y));
+            rt.sizeDelta = new Vector2(Mathf.Round(w), Mathf.Round(h));
             return rt;
+        }
+
+        /// <summary>칸 크기에 맞춰 픽셀 폰트 단계를 자동으로 고르게 한다(버튼·탭·목록 행 글자).</summary>
+        public static TextMeshProUGUI Fit(this TextMeshProUGUI t)
+        {
+            var f = t.GetComponent<TextFit>();
+            if (f == null) f = t.gameObject.AddComponent<TextFit>(); // Unity 객체라 ?? 대신 == null
+            f.maxSize = t.fontSize;
+            return t;
         }
 
         public static RectTransform Stretch(this RectTransform rt, float inset = 0f)
@@ -164,6 +174,9 @@ namespace NexusBreaker
             return t;
         }
 
+        /// <summary>주황 버튼 위 글자색: 흰색은 너무 밝아 안 읽혀서 도트 외곽선과 같은 짙은 갈색.</summary>
+        public static readonly Color32 ButtonTextColor = Palette.Outline;
+
         public static Button Button(Transform parent, string name, string label, UnityAction onClick, Sprite icon = null, float fontSize = SmallFont)
         {
             var a = GameAssets.Instance;
@@ -202,8 +215,12 @@ namespace NexusBreaker
             }
             if (!string.IsNullOrEmpty(label))
             {
-                var t = Text(rt, "Label", label, fontSize, Palette.Ash5, TextAlignmentOptions.Center);
+                // Midline = 실제 글자 모양 기준 세로 가운데(줄 높이가 큰 픽셀 폰트도 버튼 한가운데에 온다)
+                var t = Text(rt, "Label", label, fontSize, ButtonTextColor, TextAlignmentOptions.Midline);
                 t.rectTransform.Stretch();
+                t.rectTransform.offsetMin = new Vector2(1f, 0f);
+                t.rectTransform.offsetMax = new Vector2(-1f, 0f);
+                t.Fit();
             }
             return btn;
         }

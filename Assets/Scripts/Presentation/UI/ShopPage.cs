@@ -47,10 +47,16 @@ namespace NexusBreaker
 
         const float SliderRange = 1f; // 시장가 × 10^[-1, +1]
 
+        public static ShopPage Instance { get; private set; }
+
+        /// <summary>창고 물건을 골라 가격 편집 중인가(튜토리얼 진행 판정용).</summary>
+        public bool HasWarehouseSelection => _sel == Sel.Warehouse;
+
         public static ShopPage Create(RectTransform content, GameModel model)
         {
             var rt = Ui.Rect("ShopPage", content).Stretch();
             var p = rt.gameObject.AddComponent<ShopPage>();
+            Instance = p;
             p.Build(rt, model);
             return p;
         }
@@ -73,12 +79,19 @@ namespace NexusBreaker
                 cell.OnClick = () => OpenOne(grade);
                 cell.TooltipText = () => $"{Ui.Colorize(GradeInfo.Name(grade) + " 박스", Palette.GradeColor(grade))} × {_model.Data.boxes[(int)grade]}\n클릭해서 하나 열기";
                 _boxCells[g] = cell;
+                UiTargets.Register("shop_box_" + g, cell);
             }
             var openAll = Ui.Button(rt, "OpenAll", "전부", OpenAll);
             openAll.GetComponent<RectTransform>().Place(94, 11, 30, 16);
+            UiTargets.Register("shop_openall", openAll);
 
             // 아이템 목록(스크롤)
-            var scrollRt = Ui.Rect("ItemScroll", rt).Place(4, 30, 120, 75);
+            var scrollRt = Ui.Rect("ItemScroll", rt).Place(4, 30, 120, 61);
+
+            // 창고 물건 전부를 시장가(적정가)로 빈 칸에 진열
+            var placeAllMarket = Ui.Button(rt, "PlaceAllMarket", "전부 적정가로 진열", PlaceAllAtMarket);
+            placeAllMarket.GetComponent<RectTransform>().Place(4, 93, 120, 12);
+            UiTargets.Register("shop_placeall_market", placeAllMarket);
             var scrollBg = scrollRt.gameObject.AddComponent<Image>();
             scrollBg.sprite = a.UiSprite("ui_panel_dark") ?? Placeholder.PanelDark();
             if (scrollBg.sprite.border != Vector4.zero) scrollBg.type = Image.Type.Sliced;
@@ -132,6 +145,7 @@ namespace NexusBreaker
 
             _placeBtn = Ui.Button(_editorRoot, "Place", "진열하기", PlaceSelected);
             _placeBtn.GetComponent<RectTransform>().Place(0, 81, 53, 13);
+            UiTargets.Register("shop_place", _placeBtn);
             _removeBtn = Ui.Button(_editorRoot, "Remove", "내리기", RemoveSelected);
             _removeBtn.GetComponent<RectTransform>().Place(55, 81, 53, 13);
             _placeAllBtn = Ui.Button(_editorRoot, "PlaceAll", "같은 물건 모두 진열", PlaceAllSame, null, 8f);
@@ -202,6 +216,7 @@ namespace NexusBreaker
                 c.OnClick = () => { if (idx < _itemIds.Count) Select(Sel.Warehouse, _itemIds[idx], -1); };
                 c.TooltipText = () => idx < _itemIds.Count ? ItemTooltip(ItemCatalog.Get(_itemIds[idx]), null) : null;
                 _itemCells.Add(c);
+                UiTargets.Register("shop_item_" + idx, c);
             }
             for (int i = 0; i < _itemCells.Count; i++)
             {
@@ -438,6 +453,17 @@ namespace NexusBreaker
             while (_model.CountOf(id) > 0 && _model.FirstEmptySlot() >= 0 && _model.PlaceOnShelf(id, _price)) placed++;
             if (placed > 0) AudioManager.Instance?.Sfx("sfx_item_place");
             if (_model.FirstEmptySlot() < 0 && _model.CountOf(id) > 0) UiRoot.Instance?.Toast("진열대가 가득 찼다.");
+        }
+
+        void PlaceAllAtMarket()
+        {
+            if (_model.ItemCountInWarehouse == 0) { UiRoot.Instance?.Toast("창고에 진열할 물건이 없다."); return; }
+            if (_model.FirstEmptySlot() < 0) { UiRoot.Instance?.Toast("진열대가 가득 찼다. 진열대를 늘리거나 물건을 내리자."); return; }
+            int placed = _model.PlaceAllAtMarket();
+            AudioManager.Instance?.Sfx("sfx_item_place");
+            string rest = _model.ItemCountInWarehouse > 0 ? " (진열대가 모자라 비싼 것부터)" : "";
+            UiRoot.Instance?.Toast($"{placed}개를 시장가로 진열했다{rest}");
+            Select(Sel.None, null, -1);
         }
 
         void RemoveSelected()

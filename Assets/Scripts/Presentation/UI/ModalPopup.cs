@@ -27,7 +27,7 @@ namespace NexusBreaker
             prt.sizeDelta = new Vector2(220f, 84f);
             prt.anchoredPosition = Vector2.zero;
 
-            m._title = Ui.Text(prt, "Title", "", Ui.FontSize, Palette.Lamp1, TextAlignmentOptions.Center);
+            m._title = Ui.Text(prt, "Title", "", Ui.FontSize, Palette.Lamp1, TextAlignmentOptions.Midline);
             m._title.rectTransform.Place(6, 4, 208, 14);
             m._body = Ui.Text(prt, "Body", "", Ui.SmallFont, Palette.Ash5, TextAlignmentOptions.Top);
             m._body.textWrappingMode = TextWrappingModes.Normal;

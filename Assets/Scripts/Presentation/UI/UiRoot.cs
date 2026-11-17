@@ -1,5 +1,4 @@
 using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -29,7 +28,8 @@ namespace NexusBreaker
         Canvas _canvas;
         CanvasScaler _scaler;
         RectTransform _frame, _strip, _pageArea, _pageContent;
-        ToastFeed _toasts;
+        public ChatLog Chat { get; private set; }
+        RectTransform _chatRect;
         ShopPage _shop;
         UpgradePage _upgrade;
         SettingsPage _settings;
@@ -37,6 +37,17 @@ namespace NexusBreaker
 
         public RectTransform Frame => _frame;
         public int FrameHeightPx => WorldLayout.StripH + (PageOpen ? WorldLayout.PageH : 0);
+        public bool ChatVisible => _model.Data.settings.showChat;
+        public int FrameWidthPx => WorldLayout.StripW + (ChatVisible ? WorldLayout.ChatW : 0);
+
+        /// <summary>방명록 켜기/끄기 → 창 폭이 바뀐다(왼쪽 가장자리 고정).</summary>
+        public void SetChatVisible(bool on)
+        {
+            _model.Data.settings.showChat = on;
+            _chatRect.gameObject.SetActive(on);
+            AudioManager.Instance?.Sfx(on ? "sfx_ui_open" : "sfx_ui_close", 0.6f);
+            ApplyWindowSettings();
+        }
 
         public static UiRoot Create(GameModel model, Camera cam)
         {
@@ -70,9 +81,9 @@ namespace NexusBreaker
             _frame.pivot = Vector2.zero;
 
             _strip = Ui.Rect("Strip", _frame);
-            _strip.anchorMin = new Vector2(0f, 0f); _strip.anchorMax = new Vector2(1f, 0f);
-            _strip.pivot = new Vector2(0.5f, 0f);
-            _strip.sizeDelta = new Vector2(0f, WorldLayout.StripH);
+            _strip.anchorMin = _strip.anchorMax = Vector2.zero; // 왼쪽: 게임 화면(384×96)
+            _strip.pivot = Vector2.zero;
+            _strip.sizeDelta = new Vector2(WorldLayout.StripW, WorldLayout.StripH);
             _strip.anchoredPosition = Vector2.zero;
 
             _pageArea = Ui.Rect("PageArea", _frame);
@@ -92,7 +103,12 @@ namespace NexusBreaker
                 _tabs[i].GetComponent<RectTransform>().Place(4 + i * 42, 2, 40, 11);
             }
             var close = Ui.Button(_pageArea, "Close", GameAssets.Instance.UiIcon("close") != null ? "" : "×", ClosePage, GameAssets.Instance.UiIcon("close"));
-            close.GetComponent<RectTransform>().Place(368, 2, 12, 11);
+            // 창 오른쪽 위 끝(방명록을 끄면 창 폭이 바뀌므로 오른쪽에 고정)
+            var closeRt = close.GetComponent<RectTransform>();
+            closeRt.anchorMin = closeRt.anchorMax = new Vector2(1f, 1f);
+            closeRt.pivot = new Vector2(1f, 1f);
+            closeRt.anchoredPosition = new Vector2(-4f, -2f);
+            closeRt.sizeDelta = new Vector2(12f, 11f);
 
             _pageContent = Ui.Rect("Content", _pageArea).Place(0, 14, WorldLayout.StripW, WorldLayout.PageH - 14);
             _shop = ShopPage.Create(_pageContent, model);
@@ -101,7 +117,20 @@ namespace NexusBreaker
 
             HudView.Create(_strip, model, this);
             Floating = FloatingTextLayer.Create(_strip, cam);
-            _toasts = ToastFeed.Create(_strip, 92, 30, 200);
+            // 오른쪽: 화면 밖 손님 방명록(채팅) 패널
+            _chatRect = Ui.Rect("Chat", _frame);
+            _chatRect.anchorMin = _chatRect.anchorMax = new Vector2(1f, 0f);
+            _chatRect.pivot = new Vector2(1f, 0f);
+            _chatRect.sizeDelta = new Vector2(WorldLayout.ChatW, WorldLayout.StripH);
+            _chatRect.anchoredPosition = Vector2.zero;
+            Chat = ChatLog.Create(_chatRect);
+            var chatClose = Ui.Button(_chatRect, "ChatClose", GameAssets.Instance.UiIcon("close") != null ? "" : "×", () => SetChatVisible(false), GameAssets.Instance.UiIcon("close"));
+            var ccr = chatClose.GetComponent<RectTransform>();
+            ccr.anchorMin = ccr.anchorMax = new Vector2(1f, 1f);
+            ccr.pivot = new Vector2(1f, 1f);
+            ccr.anchoredPosition = new Vector2(-4f, -2f);
+            ccr.sizeDelta = new Vector2(10f, 10f);
+            _chatRect.gameObject.SetActive(model.Data.settings.showChat);
             Tooltip.Create(_frame);
             Modal = ModalPopup.Create(_frame);
 
@@ -151,7 +180,7 @@ namespace NexusBreaker
             _upgrade.gameObject.SetActive(p == Page.Upgrade);
             _settings.gameObject.SetActive(p == Page.Settings);
             for (int i = 0; i < _tabs.Length; i++)
-                _tabs[i].GetComponent<Image>().color = (int)p - 1 == i ? Color.white : new Color(0.7f, 0.65f, 0.6f);
+                _tabs[i].GetComponent<Image>().color = (int)p - 1 == i ? Color.white : new Color(0.86f, 0.8f, 0.74f); // 너무 어두우면 짙은 글자가 묻힘
             Tooltip.Instance?.Hide();
             PageChanged?.Invoke(p);
             UpdateLayout();
@@ -166,19 +195,22 @@ namespace NexusBreaker
         {
             int sw = Mathf.Max(1, Screen.width), sh = Mathf.Max(1, Screen.height);
             int fh = FrameHeightPx;
-            int scale = Mathf.Max(1, Mathf.Min(sw / WorldLayout.StripW, sh / fh));
+            // 프레임 = 게임 화면(384) + 오른쪽 방명록 패널(160, 끌 수 있음)
+            int fw = FrameWidthPx;
+            int scale = Mathf.Max(1, Mathf.Min(sw / fw, sh / fh));
             Scale = scale;
             _scaler.scaleFactor = scale;
 
-            int fwPx = WorldLayout.StripW * scale, fhPx = fh * scale;
+            int fwPx = fw * scale, fhPx = fh * scale;
             int ox = (sw - fwPx) / 2, oy = (sh - fhPx) / 2;
 
             _frame.anchoredPosition = new Vector2(ox / (float)scale, oy / (float)scale);
-            _frame.sizeDelta = new Vector2(WorldLayout.StripW, fh);
+            _frame.sizeDelta = new Vector2(fw, fh);
 
             if (_cam != null)
             {
-                _cam.pixelRect = new Rect(ox, oy, fwPx, WorldLayout.StripH * scale);
+                // 카메라는 왼쪽 게임 화면 영역에만 그린다
+                _cam.pixelRect = new Rect(ox, oy, WorldLayout.StripW * scale, WorldLayout.StripH * scale);
                 _cam.orthographicSize = WorldLayout.HalfH;
             }
         }
@@ -187,12 +219,15 @@ namespace NexusBreaker
 
         // ───────────────────────── 알림 ─────────────────────────
 
-        public void Toast(string msg, Color32? color = null) => _toasts.Push(msg, color);
+        /// <summary>알림은 게임 화면 위에 띄우지 않고 오른쪽 방명록 패널에 쌓는다.</summary>
+        public void Toast(string msg, Color32? color = null) => Chat.System(msg, color);
 
         void OnBoxOpened(ItemDef item, Grade g, bool isNew)
         {
+            // 방명록이 박스 개봉으로 도배되지 않게: 처음 본 물건이나 희귀 이상만
+            if (!isNew && item.Grade < Grade.Rare) return;
             string name = Ui.Colorize(item.Name, Palette.GradeColor(item.Grade));
-            Toast(isNew ? $"{name} 획득! {Ui.Colorize("NEW", Palette.Magenta)}" : $"{name} 획득");
+            Toast(isNew ? $"{name} 획득 {Ui.Colorize("NEW", Palette.Magenta)}" : $"{name} 획득");
         }
 
         void OnCustomerResolved(CustomerVisit v)
@@ -202,14 +237,14 @@ namespace NexusBreaker
                 case VisitOutcome.Bought:
                     double ratio = v.Market > 0 ? v.Price / v.Market : 1d;
                     string tag = ratio >= 2.5 ? Ui.Colorize(" 대박!", Palette.Magenta) : ratio >= 1.3 ? Ui.Colorize(" 비싸게!", Palette.Lamp0) : "";
-                    Toast($"{v.Customer.Name}: {v.Item.Name} {BigNum.Price(v.Price)}너트에 구매{tag}");
+                    Chat.Customer(v.Customer, $"{v.Item.Name} 구매 {Ui.Colorize("+" + BigNum.Price(v.Price), Palette.Lamp1)}{tag}");
                     break;
                 case VisitOutcome.Rejected:
                     if (v.LookedAtMostExpensive != null)
-                        Toast($"{v.Customer.Name}: \"{v.LookedAtMostExpensive.Name}, 너무 비싼데…\"", Palette.Ash3);
+                        Chat.Customer(v.Customer, Ui.Colorize($"\"{v.LookedAtMostExpensive.Name}, 너무 비싼데…\"", Palette.Ash3));
                     break;
                 case VisitOutcome.EmptyShelf:
-                    Toast($"{v.Customer.Name}: \"살 게 없네…\"", Palette.Ash3);
+                    Chat.Customer(v.Customer, Ui.Colorize("\"살 게 없네…\"", Palette.Ash3));
                     break;
             }
         }

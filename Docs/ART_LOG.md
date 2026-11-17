@@ -20,7 +20,7 @@
 | FX 6 | ✅ |
 | 손님 8 | ✅ walk 6×100 / idle 4×180 / buy 4×120 / reject 4×120 |
 | 환경 6 | ✅ bg_sky/far/mid/ground(가로 무한 타일), shop_stall(idle 4×200), props(9종) |
-| UI 7 | ✅ |
+| UI 7 (+ui_chat 추가 요청분) | ✅ |
 
 ## 애니메이션 메모 (코드 참고)
 - repairman (48×48, 피벗 바닥 중앙, 왼쪽을 봄)
@@ -58,6 +58,7 @@ Unity Sprite Border 순서는 L, B, R, T (px). 파일 안에도 같은 값을 ce
 |---|---|---|
 | ui_panel | (없음, 1프레임) | 6, 6, 6, 6 |
 | ui_panel_dark | (없음, 1프레임) | 6, 6, 6, 6 |
+| ui_chat (32×32) | (없음, 1프레임) | 8, 8, 8, 8 — 손님 채팅/방명록 말풍선(160×96 등으로 늘려 씀). 왼쪽 3px는 투명 여백, 꼬리는 왼쪽-아래 모서리 칸(y 25~29)에서 왼쪽을 가리킴. 헤더 띠(녹슨 철판 y 1~6, 구분선 y 7) + 오른쪽 위 모서리에 타이핑 점 3개. 안쪽 단색 `#2e2620`(ui_panel_dark와 같음) → 밝은 텍스트용 |
 | ui_button | `normal` `hover` `pressed` | 5, 5, 5, 5 |
 | ui_slot | `empty` `selected` | 4, 4, 4, 4 |
 | ui_bar | `frame` `fill` | 2, 2, 2, 2 — `fill`은 프레임 안쪽(x 2~61, y 2~5)만 칠함 |

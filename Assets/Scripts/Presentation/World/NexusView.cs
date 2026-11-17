@@ -116,5 +116,8 @@ namespace NexusBreaker
         }
 
         public bool Contains(Vector2 world) => _col != null && gameObject.activeInHierarchy && _col.OverlapPoint(world);
+
+        /// <summary>클릭 판정 영역(월드 좌표). 튜토리얼 강조 표시용.</summary>
+        public Bounds WorldBounds => _col != null ? _col.bounds : new Bounds(WorldLayout.NexusCenter, new Vector3(2.2f, 2.8f, 0f));
     }
 }

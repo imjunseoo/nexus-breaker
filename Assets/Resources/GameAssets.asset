@@ -2282,6 +2282,8 @@ MonoBehaviour:
     sprite: {fileID: 8422003648248678462, guid: 7b92e867915e501478b76b2f27c53f70, type: 3}
   - name: ui_button/ui_button
     sprite: {fileID: -1419247860109988721, guid: 7b92e867915e501478b76b2f27c53f70, type: 3}
+  - name: ui_chat
+    sprite: {fileID: -477889152720017681, guid: 3aa901715885dc448a5ec31e2906a64a, type: 3}
   - name: ui_icons/box
     sprite: {fileID: -6140901724507736688, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/close

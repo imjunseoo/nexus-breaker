@@ -92,6 +92,8 @@ namespace NexusBreaker
             foreach (var s in d.shelf)
                 if (s != null && !s.IsEmpty && ItemCatalog.Get(s.itemId) == null) s.itemId = null;
             d.settings.windowScale = Mathf.Clamp(d.settings.windowScale, 1, 6);
+            // 튜토리얼이 생기기 전 세이브: 이미 판매해본 플레이어에게는 다시 보여주지 않는다
+            if (d.tutorialStep == 0 && d.lifetime.itemsSold > 0) d.tutorialStep = -1;
         }
     }
 }

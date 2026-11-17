@@ -89,6 +89,14 @@ namespace NexusBreaker
             RaiseEconomyChanged();
         }
 
+        /// <summary>첫 박스가 몇 번만 더 때리면 나오게 한다(튜토리얼용, 이미 타격 기록이 있으면 무시).</summary>
+        public void PrimeFirstBox(int hitsLeft = 3)
+        {
+            if (Data.lifetime.totalHits > 0 || BoxCount > 0) return;
+            int perBox = Stats.HitsPerBox(Level(UpgradeId.BoxRate));
+            Data.hitsSinceBox = Math.Max(Data.hitsSinceBox, perBox - hitsLeft);
+        }
+
         // ───────────────────────── 박스 열기 ─────────────────────────
 
         /// <summary>해당 등급 박스 하나를 연다. 없으면 null.</summary>

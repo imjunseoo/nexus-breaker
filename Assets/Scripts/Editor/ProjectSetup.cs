@@ -88,7 +88,7 @@ namespace NexusBreaker.EditorTools
             PlayerSettings.companyName = "NexusBreaker";
             PlayerSettings.productName = "Nexus Breaker";
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-            PlayerSettings.defaultScreenWidth = WorldLayout.StripW * 3;
+            PlayerSettings.defaultScreenWidth = WorldLayout.FrameW * 3;
             PlayerSettings.defaultScreenHeight = WorldLayout.StripH * 3;
             PlayerSettings.resizableWindow = true;
             PlayerSettings.runInBackground = true;

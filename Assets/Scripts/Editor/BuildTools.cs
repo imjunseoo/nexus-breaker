@@ -12,7 +12,7 @@ namespace NexusBreaker.EditorTools
     /// </summary>
     public static class BuildTools
     {
-        public const string DefaultVersion = "0.1.0-beta";
+        public const string DefaultVersion = "0.1.1-beta";
 
         [MenuItem("Nexus Breaker/Build Release (Windows)")]
         public static void BuildMenu() => Build(DefaultVersion);

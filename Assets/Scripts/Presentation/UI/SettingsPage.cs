@@ -34,14 +34,16 @@ namespace NexusBreaker
               .GetComponent<RectTransform>().Place(6, 25, 110, 12);
             Ui.Toggle(rt, "ClickThrough", "빈 곳 클릭 통과", s.clickThrough, v => { s.clickThrough = v; root.ApplyWindowSettings(); })
               .GetComponent<RectTransform>().Place(6, 38, 110, 12);
+            _chatToggle = Ui.Toggle(rt, "ShowChat", "방명록 보기", s.showChat, v => root.SetChatVisible(v));
+            _chatToggle.GetComponent<RectTransform>().Place(6, 51, 110, 12);
 
             var scaleLabel = Ui.Text(rt, "ScaleLabel", "창 크기", Ui.SmallFont, Palette.Ash4);
-            scaleLabel.rectTransform.Place(6, 52, 40, 12);
+            scaleLabel.rectTransform.Place(6, 65, 40, 12);
             for (int i = 1; i <= 4; i++)
             {
                 int scale = i + 1; // 2x ~ 5x
                 var b = Ui.Button(rt, "Scale" + scale, $"{scale}x", () => { s.windowScale = scale; root.ApplyWindowSettings(); });
-                b.GetComponent<RectTransform>().Place(44 + (i - 1) * 19, 52, 18, 12);
+                b.GetComponent<RectTransform>().Place(44 + (i - 1) * 19, 65, 18, 12);
             }
 
             // ── 소리 ──
@@ -64,9 +66,17 @@ namespace NexusBreaker
             var quit = Ui.Button(rt, "Quit", "저장하고 종료", () => GameRoot.Instance.SaveAndQuit());
             quit.GetComponent<RectTransform>().Place(300, 88, 78, 14);
             var hint = Ui.Text(rt, "Hint", "오른쪽 위 핀 버튼을 끌면 창이 움직여요", 8f, Palette.Ash2);
-            hint.rectTransform.Place(6, 68, 130, 10);
+            hint.rectTransform.Place(6, 81, 130, 10);
             var version = Ui.Text(rt, "Version", $"버전 {Application.version}", 8f, Palette.Ash3);
-            version.rectTransform.Place(6, 82, 120, 10);
+            version.rectTransform.Place(6, 93, 120, 10);
+        }
+
+        UnityEngine.UI.Toggle _chatToggle;
+
+        // 방명록의 × 버튼으로 끈 경우에도 설정 화면 체크 상태가 맞도록
+        void OnEnable()
+        {
+            if (_chatToggle != null && _model != null) _chatToggle.SetIsOnWithoutNotify(_model.Data.settings.showChat);
         }
 
         void MakeVolume(RectTransform rt, string label, float y, float value, UnityEngine.Events.UnityAction<float> onChange)
