@@ -146,6 +146,13 @@ namespace NexusBreaker
         static IEnumerator ShotAndQuit(string path, float delay)
         {
             yield return new WaitForSecondsRealtime(delay);
+            // -nbTooltip n: 상점 창고 n번 칸 툴팁을 띄운 채로 찍기
+            if (int.TryParse(Arg("-nbTooltip"), out int tipIdx) && ShopPage.Instance != null)
+            {
+                ShopPage.Instance.DebugShowItemTooltip(tipIdx);
+                yield return null;
+                yield return null;
+            }
             yield return new WaitForEndOfFrame();
             ScreenCapture.CaptureScreenshot(path);
             yield return new WaitForSecondsRealtime(1.5f);

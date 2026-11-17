@@ -321,7 +321,7 @@ namespace NexusBreaker
             return toggle;
         }
 
-        public static string Nut(double v) => $"{BigNum.Price(v)}<size=80%> 너트</size>";
+        public static string Nut(double v) => $"{BigNum.Price(v)} 너트";
 
         public static string Colorize(string s, Color32 c) => $"<color={Palette.Hex(c)}>{s}</color>";
     }

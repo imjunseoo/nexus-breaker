@@ -12,6 +12,10 @@ namespace NexusBreaker
         TextMeshProUGUI _text;
         RectTransform _owner;
 
+        // 패널 테두리(ui_panel_dark 9-slice 6px)보다 안쪽에 글자가 오도록
+        const float PadX = 9f, PadTop = 7f, PadBottom = 8f;
+        const float Width = 150f;
+
         public static Tooltip Create(RectTransform frame)
         {
             var panel = Ui.Panel(frame, "Tooltip", dark: true);
@@ -21,7 +25,12 @@ namespace NexusBreaker
             t._frame = frame;
             t._text = Ui.Text(panel.rectTransform, "Text", "", Ui.SmallFont, Palette.Ash5, TextAlignmentOptions.TopLeft);
             t._text.textWrappingMode = TextWrappingModes.Normal;
-            t._text.rectTransform.Stretch(4f);
+            var trt = t._text.rectTransform;
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.pivot = new Vector2(0f, 1f);
+            trt.offsetMin = new Vector2(PadX, PadBottom);
+            trt.offsetMax = new Vector2(-PadX, -PadTop);
             var fitter = panel.gameObject.AddComponent<LayoutElement>();
             fitter.ignoreLayout = true;
             panel.gameObject.SetActive(false);
@@ -35,10 +44,10 @@ namespace NexusBreaker
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             _text.text = text;
-            _text.rectTransform.sizeDelta = Vector2.zero;
-            const float width = 140f;
-            Vector2 pref = _text.GetPreferredValues(text, width - 8f, 0f);
-            float h = Mathf.Ceil(pref.y) + 8f;
+            // 글자 칸의 안쪽 여백(offset)은 그대로 두고, 패널 크기만 글자에 맞춘다
+            const float width = Width;
+            Vector2 pref = _text.GetPreferredValues(text, width - PadX * 2f, 0f);
+            float h = Mathf.Ceil(pref.y) + PadTop + PadBottom;
             _rt.anchorMin = _rt.anchorMax = new Vector2(0f, 1f);
             _rt.pivot = new Vector2(0f, 1f);
             _rt.sizeDelta = new Vector2(width, h);

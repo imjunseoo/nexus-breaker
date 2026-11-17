@@ -308,9 +308,9 @@ namespace NexusBreaker
             double trend = _model.MarketTrend(def);
             string arrow = trend > 0.02 ? Ui.Colorize($"▲{trend * 100:0}%", Palette.Moss2)
                          : trend < -0.02 ? Ui.Colorize($"▼{-trend * 100:0}%", Palette.Red3) : "";
-            string s = $"{Ui.Colorize(def.Name, Palette.GradeColor(def.Grade))} <size=80%>[{GradeInfo.Name(def.Grade)}]</size>\n" +
+            string s = $"{Ui.Colorize(def.Name, Palette.GradeColor(def.Grade))} {Ui.Colorize("[" + GradeInfo.Name(def.Grade) + "]", Palette.Ash2)}\n" +
                        $"시장가 {Ui.Colorize(BigNum.Price(market), Palette.Lamp1)} 너트 {arrow}\n" +
-                       $"<size=85%><color={Palette.Hex(Palette.Ash3)}>{def.Description}</color></size>";
+                       $"<color={Palette.Hex(Palette.Ash3)}>{def.Description}</color>";
             if (slot != null)
             {
                 var speed = GameModel.ClassifySpeed(_model.ExpectedSellSeconds(def, slot.price));
@@ -378,7 +378,7 @@ namespace NexusBreaker
             if (_sel == Sel.None || _selItem == null) return;
             var def = ItemCatalog.Get(_selItem);
             if (def == null) return;
-            string count = _sel == Sel.Warehouse ? $" ×{_model.CountOf(def.Id)}" : $" <size=80%>(진열 {_selSlot + 1}번)</size>";
+            string count = _sel == Sel.Warehouse ? $" ×{_model.CountOf(def.Id)}" : $" {Ui.Colorize($"(진열 {_selSlot + 1}번)", Palette.Ash3)}";
             _name.text = Ui.Colorize(def.Name, Palette.GradeColor(def.Grade)) + count;
             double market = _model.MarketPrice(def);
             double trend = _model.MarketTrend(def);
@@ -453,6 +453,15 @@ namespace NexusBreaker
             while (_model.CountOf(id) > 0 && _model.FirstEmptySlot() >= 0 && _model.PlaceOnShelf(id, _price)) placed++;
             if (placed > 0) AudioManager.Instance?.Sfx("sfx_item_place");
             if (_model.FirstEmptySlot() < 0 && _model.CountOf(id) > 0) UiRoot.Instance?.Toast("진열대가 가득 찼다.");
+        }
+
+        /// <summary>자동 검증용: 창고 idx번 칸의 툴팁을 띄운다(마우스 올림 대신).</summary>
+        public void DebugShowItemTooltip(int idx)
+        {
+            if (_dirty) { _dirty = false; RefreshAll(); }
+            if (idx < 0 || idx >= _itemCells.Count || !_itemCells[idx].gameObject.activeSelf) return;
+            var text = _itemCells[idx].TooltipText?.Invoke();
+            if (!string.IsNullOrEmpty(text)) Tooltip.Instance?.Show(text, (RectTransform)_itemCells[idx].transform);
         }
 
         void PlaceAllAtMarket()

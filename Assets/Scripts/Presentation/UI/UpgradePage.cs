@@ -79,7 +79,7 @@ namespace NexusBreaker
             {
                 int lv = _model.Level(r.Def.Id);
                 bool maxed = _model.IsMaxed(r.Def.Id);
-                r.Name.text = $"{r.Def.Name} <size=80%><color={Palette.Hex(Palette.Ash3)}>Lv{lv}</color></size>";
+                r.Name.text = $"{r.Def.Name} <color={Palette.Hex(Palette.Ash3)}>Lv{lv}</color>";
                 r.Effect.text = r.Def.DescribeNext(lv);
                 if (maxed)
                 {
