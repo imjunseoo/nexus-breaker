@@ -416,6 +416,100 @@ def error():
     return room(lp(x, 4000, 2), rt=0.2, wet=0.06, seed=39)
 
 
+# ============================================================ v0.2: weakpoint / contracts
+def weakpoint_spawn():
+    """glowing crack appears: one clear soft-attack crystal 'ting' + 3 tiny rising pings + faint upward shimmer.
+    Heard every 1-2 min for hours -> quiet, no sharp transient, energy kept under ~3 kHz."""
+    n = N(1.4)
+    t = T(n)
+    ting = glass_ping(880.0, 0.38, n, seed=1001, partials=(1.0, 2.32, 3.74), amps=(1.0, 0.18, 0.04), attack=0.004,
+                      detune=0.002)
+    body = sine(440.0, n) * env_exp(n, 0.12, 0.006) * 0.25  # soft low support so it is not just a thin ping
+    sp = np.zeros(n)
+    for k, (f, t0) in enumerate([(1174.7, 0.07), (1318.5, 0.12), (1760.0, 0.18)]):
+        mix_into(sp, glass_ping(f, 0.22, seed=1010 + k, amps=(1.0, 0.12, 0.02), attack=0.005), N(t0), 0.8 ** k)
+    glide = sine(1100 + 600 * np.clip((t - 0.05) / 0.4, 0, 1) ** 0.7, n) * (0.6 + 0.4 * np.sin(2 * np.pi * 17 * t))
+    glide *= env_points(n, [(0, 0), (0.08, 0), (0.2, 1), (0.45, 0.3), (0.6, 0)])
+    x = 1.0 * ting + body + 0.32 * sp + 0.05 * glide
+    x = lp(x, 5500, 2)
+    return room(x, rt=0.7, wet=0.22, seed=40, brightness=5500)
+
+
+def weakpoint_break():
+    """weak point shattered: low thump + crisp crack + ~100 crystal fragments + rising pentatonic sparkle tail
+    (D major, ~1 s) + faint alien FM shimmer. One step above sfx_hit_crit."""
+    r = rng(1100)
+    n = N(1.8)
+    t = T(n)
+    # low 'thump' + sub
+    th = thump(120, 42, 0.035, 0.16, n, attack=0.002)
+    sub = sine(45.0, n) * env_exp(n, 0.28, 0.005)
+    body = sat(1.1 * th + 0.6 * sub, 1.8)
+    knock = bp(white(n, 1101), 120, 1200) * env_exp(n, 0.03, 0.001)
+    # crisp crack transient
+    crack = bp(white(n, 1102), 600, 4500, 2) * env_exp(n, 0.012, 0.0004)
+    # core resonance of the broken crystal
+    core = add(glass_ping(698.5, 0.45, n, seed=1103, partials=(1, 2.27, 3.66), amps=(1, 0.3, 0.08)),
+               0.8 * glass_ping(1046.5, 0.35, n, seed=1104, partials=(1, 2.41, 3.9), amps=(1, 0.25, 0.06)))
+    # shatter: fragment grains, dense at first
+    sh = np.zeros(n)
+    for k in range(110):
+        t0 = r.exponential(0.07)
+        if t0 > 0.45:
+            continue
+        f = float(np.exp(r.uniform(np.log(900), np.log(4000))))
+        g = glass_ping(f, r.uniform(0.012, 0.07), seed=1200 + k, amps=(1, 0.25, 0.05), attack=0.0006)
+        mix_into(sh, g, N(0.004 + t0), r.uniform(0.25, 1.0) * (1000 / f) ** 0.5 * np.exp(-t0 / 0.15))
+    # sparkle tail: rising D-major pentatonic bells, then scattered soft twinkles to ~1.2 s
+    tail = np.zeros(n)
+    for k, (m, t0) in enumerate([(81, 0.10), (86, 0.17), (88, 0.24), (90, 0.31), (93, 0.38), (95, 0.46)]):
+        f = 440.0 * 2 ** ((m - 69) / 12)
+        b = add(0.6 * fm_bell(f, 0.5, 2.0, 0.8, attack=0.004),
+                glass_ping(f, 0.4, seed=1300 + k, amps=(1, 0.15, 0.03), attack=0.004))
+        mix_into(tail, b, N(t0), 0.85 * 0.9 ** k)
+    for k in range(14):
+        t0 = 0.45 + r.uniform(0, 0.75)
+        f = 440.0 * 2 ** ((r.choice([81, 83, 85, 86, 88, 90, 93]) - 69) / 12)
+        mix_into(tail, glass_ping(f, 0.16, seed=1400 + k, amps=(1, 0.12, 0.02), attack=0.003), N(t0),
+                 r.uniform(0.15, 0.4) * (1 - (t0 - 0.45) / 0.9))
+    # faint alien shimmer under the tail (quartal D-A-E, FM sqrt2)
+    idx = 0.9 * np.exp(-t / 0.4) + 0.2
+    shim = sum(fm(n, f * (1 + 0.003 * np.sin(2 * np.pi * (5.3 + j) * t)), 1.414, idx)
+               for j, f in enumerate((587.3, 880.0, 1318.5))) / 3
+    shim *= env_points(n, [(0, 0), (0.08, 0), (0.25, 1), (0.7, 0.5), (1.25, 0)])
+    x = (body + 0.45 * knock + 0.28 * crack + 0.22 * core + 0.2 * sh + 0.2 * tail + 0.06 * shim)
+    x = lp(x, 6500, 2)
+    return room(x, rt=1.2, wet=0.26, seed=41, brightness=5500)
+
+
+def contract_done():
+    """contract completed: short soft two-note chime (E5 -> A5)"""
+    n = N(1.6)
+
+    def chime(f, tau, seed):
+        m = N(tau * 5)
+        tt = T(m)
+        x = modes(m, [f, f * 2.0, f * 3.01], [1.0, 0.18, 0.05], [tau, tau * 0.5, tau * 0.25], seed=seed,
+                  attack=0.006, detune=0.0015)
+        return x + 0.15 * sine(f / 2, m) * np.exp(-tt / (tau * 0.4))  # warm undertone
+    x = place(1.3, [(0.0, chime(659.3, 0.3, 1501), 0.8), (0.13, chime(880.0, 0.4, 1502), 1.0)])
+    x = lp(x, 5000, 2)
+    return room(x, rt=0.6, wet=0.18, seed=42)
+
+
+def contract_claim():
+    """reward claimed: rubber stamp 'tak' on paper/wooden desk + small nut jingle"""
+    n = N(0.4)
+    th = thump(240, 140, 0.004, 0.018, n, attack=0.0008)
+    desk = modes(n, [190, 410, 820], [1.0, 0.5, 0.2], [0.04, 0.025, 0.012], seed=1601)
+    slap = bp(white(n, 1602), 700, 3000, 2) * env_exp(n, 0.005, 0.0005)
+    stamp = 0.9 * th + 0.5 * desk + 0.35 * slap
+    jingle = nut_clinks(1610, 4, 0.13, dur=0.7)
+    x = place(1.0, [(0, stamp, 1.0), (0.026, 0.6 * th + 0.3 * desk, 0.22), (0.12, jingle, 0.45)])
+    x = lp(x, 5800, 2)
+    return room(x, rt=0.35, wet=0.12, seed=43)
+
+
 # ============================================================ registry
 # name: (render fn, target momentary-max LUFS (dual mono), description)
 SFX = {}
@@ -447,7 +541,13 @@ SFX["sfx_offline_reward"] = (offline_reward, -19.0, "오프라인 정산 팝업:
 SFX["sfx_error"] = (error, -22.0, "오류(너트 부족 등): 낮은 2연 부저+툭")
 
 
-MAXDUR = {"sfx_nexus_destroy": 2.9, "sfx_prestige": 2.8}
+SFX["sfx_weakpoint_spawn"] = (weakpoint_spawn, -26.0, "v0.2 약점 생성: 부드러운 어택의 맑은 결정 '팅'(A5)+작게 올라가는 3음 반짝임. 1~2분마다 → 일반 타격보다 4 LU 작게")
+SFX["sfx_weakpoint_break"] = (weakpoint_break, -15.5, "v0.2 약점 파괴: 낮은 쿵+시원한 크랙+결정 파편 110알+상승 D장조 펜타토닉 벨 꼬리(~1.2s)+옅은 외계 시머. 치명타보다 1.5 LU 크고 화려하게")
+SFX["sfx_contract_done"] = (contract_done, -22.0, "v0.2 의뢰 달성: 부드러운 두 음 차임(E5→A5)")
+SFX["sfx_contract_claim"] = (contract_claim, -21.0, "v0.2 의뢰 보상: 고무 도장 '탁'(나무 책상+종이)+너트 짤랑")
+
+
+MAXDUR = {"sfx_nexus_destroy": 2.9, "sfx_prestige": 2.8, "sfx_weakpoint_break": 1.6}
 
 
 def main(filt=None):

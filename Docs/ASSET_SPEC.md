@@ -90,6 +90,12 @@
 | `fx_box_poof.aseprite` | 24×24 | `play` (5 · 60) |
 | `fx_nut_sparkle.aseprite` | 8×8 | `play` (4 · 80) |
 | `fx_level_up.aseprite` | 32×32 | `play` (6 · 60) |
+| `fx_weakpoint.aseprite` (v0.2) | 24×24 | `spawn` (4 · 60), `loop` (6 · 90), `break` (6 · 50), `fade` (3 · 80) |
+
+- `fx_weakpoint`(v0.2 약점 이벤트): 넥서스 표면에 가끔 생기는 **빛나는 균열**. 클릭하면 깨지며 큰 데미지 + 박스.
+  - 피벗 중앙. 넥서스(보라 결정) 위에 겹쳐 그려지므로 **청록·자홍 네온**으로 또렷하게, 바깥쪽은 투명.
+  - `spawn`: 균열이 쩍 갈라지며 빛이 새어 나옴 → `loop`: 맥동(눈에 띄게, 그러나 깜빡임이 너무 빠르지 않게) → 클릭 시 `break`: 결정 파편이 튀며 섬광 / 시간 초과 시 `fade`: 균열이 아물며 사라짐.
+  - 화면 3배 기준 지름 약 14~18px 정도가 클릭 대상 — 작은 넥서스 위에서도 한눈에 보여야 한다.
 
 ### 2-4. 박스 — `Assets/Art/Boxes/`
 캔버스 16×16, 각 파일 태그 `idle` (2 · 300, 미세한 흔들림/반짝임), `open` (5 · 70).
@@ -174,6 +180,7 @@ id: `survivor_a`, `survivor_b`, `merchant`, `raider`, `soldier`, `cultist`, `col
 > - `ui_slot`: 태그 `empty` `selected`
 > - `ui_bar`: 태그 `frame` `fill` (fill은 64×8 캔버스 안에서 프레임 안쪽 영역만 칠함)
 > - `ui_icons`: 아이콘 이름 그대로 태그 (`nut` `hammer` `helper` `speed` `crit` `box` `warehouse` `shelf` `customer` `shop` `settings` `prestige_core` `close` `pin` `ghost`)
+>   - v0.2 추가: `contract`(의뢰 — 압정 꽂힌 쪽지/메모), `codex`(도감 — 낡은 수첩), `weakpoint`(약점 — 빛나는 균열, 의뢰 아이콘용), `check`(완료 체크 표시)
 > - 9-slice 테두리는 코드가 런타임에 붙인다: panel·panel_dark 6px, button 5px, slot 4px, bar 2px. 이 값에 맞춰 테두리 장식을 그릴 것.
 
 ---
@@ -211,6 +218,10 @@ id: `survivor_a`, `survivor_b`, `merchant`, `raider`, `soldier`, `cultist`, `col
 | `sfx_prestige.wav` | 환생: 상승하는 화음 + 휘익 |
 | `sfx_offline_reward.wav` | 오프라인 정산 팝업 |
 | `sfx_error.wav` | 너트 부족 등 |
+| `sfx_weakpoint_spawn.wav` (v0.2) | 넥서스에 약점(빛나는 균열)이 생김: 짧고 맑은 결정 "팅" + 살짝 올라가는 반짝임. 1~2분에 한 번 → 작게, 거슬리지 않게 |
+| `sfx_weakpoint_break.wav` (v0.2) | 약점을 깸: 시원한 결정 파쇄 + 낮은 쿵 + 반짝이는 꼬리(0.8~1.2초). 치명타보다 한 단계 더 화려하게 |
+| `sfx_contract_done.wav` (v0.2) | 의뢰 달성 알림: 짧은 두 음 차임(부드럽게) |
+| `sfx_contract_claim.wav` (v0.2) | 의뢰 보상 받기: 종이 도장 "탁" + 너트 짤랑 |
 
 ### BGM — `Assets/Audio/BGM/`
 | 파일 | 길이 | 설명 |

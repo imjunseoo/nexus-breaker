@@ -66,6 +66,9 @@ namespace NexusBreaker
             _visits.Clear();
             _lastStage = DamageStageNow;
             _lastStratum = StratumNow;
+            WeakPointActive = false;
+            ScheduleNextWeakPoint();
+            ResetContractsForPrestige();
 
             Prestiged?.Invoke();
             RaiseToast($"{RegionCatalog.Name(Data.region)}에 도착했다. 넥서스 체력 {BigNum.Format(Data.nexusMaxHp)}");

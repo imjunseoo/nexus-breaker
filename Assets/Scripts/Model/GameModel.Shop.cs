@@ -227,6 +227,9 @@ namespace NexusBreaker
                 Data.run.bestSaleItem = item.Id;
             }
 
+            RecordSold(item, sold.price);
+            OnSaleForContracts(item, sold.price, v.Market);
+
             sold.itemId = null;
             sold.price = 0d;
             RaiseEconomyChanged();

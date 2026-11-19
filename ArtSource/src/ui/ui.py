@@ -386,8 +386,85 @@ ICONS["ghost"] = P("""
 ................
 ................
 """, 16)
+# ---- v0.2 icons: contract (pinned note), codex (worn notebook), weakpoint (glowing crack), check
+def _icon_contract():
+    img = blank(16, 16)
+    rect(img, 3, 3, 10, 12, "l")                      # paper
+    rect(img, 9, 3, 4, 12, "k")                       # shaded right side (light from top-left)
+    rect(img, 3, 13, 10, 2, "k")
+    for y, (x0, x1) in ((7, (5, 11)), (9, (5, 10)), (11, (5, 9))):
+        line(img, x0, y, x1, y, "5")                  # ink lines
+    put(img, 12, 14, "j"); put(img, 11, 14, "j"); put(img, 12, 13, "j")   # curled corner
+    img = outline(img, "1")
+    pin = P("""
+.111.
+1vvu1
+1vut1
+.1t1.
+..1..
+""", 5)                                               # red push-pin
+    blit(img, pin, 6, 0)
+    put(img, 7, 1, "l")                               # pin glint
+    return img
+
+
+def _icon_codex():
+    img = blank(16, 16)
+    rect(img, 3, 1, 9, 14, "5")                       # leather cover
+    rect(img, 3, 1, 2, 14, "3")                       # spine
+    for y in (3, 12):
+        line(img, 3, y, 4, y, "6")                    # spine bands
+    line(img, 5, 1, 11, 1, "6"); line(img, 5, 1, 5, 14, "6")   # lit top / left edge
+    line(img, 11, 2, 11, 14, "4"); line(img, 5, 14, 11, 14, "4")  # shadow edges
+    for y in range(2, 14):
+        put(img, 12, y, "l" if y % 2 else "k")        # page block
+    for (x, y, k) in ((8, 5, "w"), (7, 6, "w"), (9, 6, "w"), (8, 6, "x"), (8, 7, "w")):
+        put(img, x, y, k)                             # brass emblem
+    line(img, 5, 9, 11, 9, "3"); put(img, 11, 9, "w")  # strap + clasp
+    for (x, y) in ((10, 11), (6, 12), (9, 3)):
+        put(img, x, y, "4")                           # wear scratches
+    return outline(img, "1")
+
+
+def _icon_weakpoint():
+    img = blank(16, 16)
+    # a violet crystal chip...
+    for y in range(16):
+        for x in range(16):
+            if abs(x - 7.5) + abs(y - 7.5) <= 6.5:
+                img[y, x] = K["C" if x + y < 13 else "B" if x + y < 18 else "A"]
+    # ...split by a glowing crack (cyan rim, pale core, magenta tips)
+    crack = [(4, 12), (6, 10), (6, 8), (8, 7), (9, 5), (11, 4)]
+    for (x0, y0), (x1, y1) in zip(crack, crack[1:]):
+        line(img, x0, y0, x1, y1, "D")
+    for (x0, y0), (x1, y1) in zip(crack, crack[1:]):
+        line(img, x0, y0 + 1, x1, y1 + 1, "D")
+    for (x0, y0), (x1, y1) in zip(crack[1:-1], crack[2:-1]):
+        line(img, x0, y0, x1, y1, "E")
+    line(img, 8, 7, 10, 9, "D"); put(img, 11, 10, "F")   # branch
+    put(img, 4, 13, "F"); put(img, 12, 3, "F"); put(img, 7, 8, "l")
+    return outline(img, "1")
+
+
+def _icon_check():
+    img = blank(16, 16)
+    pts = [(3, 8), (6, 11), (12, 4)]
+    for w in range(3):                                 # 3px thick stroke
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            line(img, x0, y0 + w, x1, y1 + w, "D" if w else "E")
+    line(img, 6, 13, 12, 6, "C")                       # underside shade
+    put(img, 3, 8, "E"); put(img, 12, 4, "E")
+    return outline(img, "1")
+
+
+ICONS["contract"] = _icon_contract()
+ICONS["codex"] = _icon_codex()
+ICONS["weakpoint"] = _icon_weakpoint()
+ICONS["check"] = _icon_check()
+
 ICON_ORDER = ["nut", "hammer", "helper", "speed", "crit", "box", "warehouse", "shelf", "customer", "shop",
-              "settings", "prestige_core", "close", "pin", "ghost"]
+              "settings", "prestige_core", "close", "pin", "ghost",
+              "contract", "codex", "weakpoint", "check"]           # v0.2 additions appended (order kept)
 
 NUT_SMALL = P("""
 ..1111..

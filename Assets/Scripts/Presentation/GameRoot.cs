@@ -126,6 +126,12 @@ namespace NexusBreaker
             if (!_cam.pixelRect.Contains(sp)) return;
             Vector3 world = _cam.ScreenToWorldPoint(new Vector3(sp.x, sp.y, 10f));
             world.z = 0f;
+            if (World.WeakPoint != null && World.WeakPoint.Contains(world))
+            {
+                World.NotifyClickWorld(world);
+                Model.HitWeakPoint();
+                return;
+            }
             if (!World.Nexus.Contains(world)) return;
             World.NotifyClickWorld(world);
             Model.Click();

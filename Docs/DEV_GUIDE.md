@@ -33,6 +33,10 @@ Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResult
 NexusBreaker.exe -nbSaveDir <임시폴더> -nbDemo -nbPage shop -nbShot shot.png -nbDelay 5
 ```
 `-nbSaveDir`로 실제 세이브를 건드리지 않는다. `-nbDemo`는 보여주기용 상태로 시작한다.
+- `-nbPage shop|upgrade|contracts|codex|settings`: 시작 시 페이지 열기
+- `-nbWeakPoint 초`: 그 시간 뒤 약점을 띄운다(약점 화면 확인)
+- `-nbDemo`는 의뢰 하나를 완료, 하나를 진행 중 상태로 만든다
+- 개발 창은 서브 모니터에: `-monitor 2 -screen-fullscreen 0`(메인 모니터를 쓰는 중일 수 있음)
 
 ## 코드 구조 (`Assets/Scripts`)
 | 폴더 | 내용 |

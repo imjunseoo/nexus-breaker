@@ -70,6 +70,22 @@ namespace NexusBreaker
         public static int DamageStage(double hpFraction) =>
             hpFraction > 0.8d ? 0 : hpFraction > 0.6d ? 1 : hpFraction > 0.4d ? 2 : hpFraction > 0.2d ? 3 : 4;
 
+        // ── 약점(v0.2): 화면을 보고 있는 플레이어 보상 ──
+        public const double WeakPointMeanInterval = 80d;   // 평균 생성 간격(초, 지수분포)
+        public const double WeakPointMinInterval = 25d;    // 연달아 나오지 않게 최소 간격
+        public const double WeakPointLifetime = 7d;        // 이 시간 안에 못 누르면 사라짐
+        public const double WeakPointDamageMult = 30d;     // 클릭 데미지 × 30
+        public const double WeakPointFirstDelay = 40d;     // 첫 실행 후 첫 약점까지
+
+        // ── 의뢰(v0.2) ──
+        public const int ContractSlots = 3;
+        public const double ContractRefillDelay = 45d;     // 보상 받은 칸이 다시 채워질 때까지
+        public const double ContractRerollCooldown = 300d; // 무료 바꾸기 간격
+        public const double ContractTargetMinutes = 15d;   // 의뢰 하나에 걸리는 목표 시간(분)
+        public const double ContractSellRewardShare = 0.6d; // 판매 의뢰 보상 = 목표 물건 시장가 합 × 0.6
+        public const double ContractEarnRewardShare = 0.3d; // 너트 벌기 의뢰 보상 = 목표 × 0.3
+        public const double ContractPremiumMult = 1.3d;    // "비싸게 팔기" 기준 배수
+
         // ── 시장 ──
         public const double MarketStepSeconds = 300d;
         public const double MarketStepSize = 0.10d;

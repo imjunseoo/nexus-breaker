@@ -77,6 +77,10 @@ namespace NexusBreaker
             d.shelf ??= new System.Collections.Generic.List<ShelfSlot>();
             d.market ??= new System.Collections.Generic.List<MarketEntry>();
             d.codex ??= new System.Collections.Generic.List<string>();
+            d.codexStats ??= new System.Collections.Generic.List<CodexEntry>();
+            d.codexStats.RemoveAll(e => e == null || ItemCatalog.Get(e.id) == null);
+            d.contracts ??= new System.Collections.Generic.List<ContractState>();
+            d.contracts.RemoveAll(c => c == null);
             d.run ??= new RunStats();
             d.lifetime ??= new RunStats();
             d.settings ??= new GameSettings();

@@ -25,6 +25,7 @@ SPEC = {
     "FX/fx_box_poof.aseprite": (24, 24, {"play": (5, 60)}),
     "FX/fx_nut_sparkle.aseprite": (8, 8, {"play": (4, 80)}),
     "FX/fx_level_up.aseprite": (32, 32, {"play": (6, 60)}),
+    "FX/fx_weakpoint.aseprite": (24, 24, {"spawn": (4, 60), "loop": (6, 90), "break": (6, 50), "fade": (3, 80)}),
     "Environment/bg_sky.aseprite": (384, 96, None),
     "Environment/bg_far.aseprite": (384, 96, None),
     "Environment/bg_mid.aseprite": (384, 96, None),
@@ -36,7 +37,7 @@ SPEC = {
     "UI/ui_button.aseprite": (24, 16, {"normal": (1, None), "hover": (1, None), "pressed": (1, None)}),
     "UI/ui_slot.aseprite": (20, 20, {"empty": (1, None), "selected": (1, None)}),
     "UI/ui_bar.aseprite": (64, 8, {"frame": (1, None), "fill": (1, None)}),
-    "UI/ui_icons.aseprite": (16, 16, {n: (1, None) for n in "nut hammer helper speed crit box warehouse shelf customer shop settings prestige_core close pin ghost".split()}),
+    "UI/ui_icons.aseprite": (16, 16, {n: (1, None) for n in "nut hammer helper speed crit box warehouse shelf customer shop settings prestige_core close pin ghost contract codex weakpoint check".split()}),
     "UI/ui_nut_small.aseprite": (8, 8, None),
     "UI/ui_chat.aseprite": (32, 32, None),  # added on request (guest-book speech bubble)
 }
@@ -48,6 +49,9 @@ for c in CUSTOMERS:
     SPEC[f"Customers/customer_{c}.aseprite"] = (32, 32, {"walk": (6, 100), "idle": (4, 180), "buy": (4, 120), "reject": (4, 120)})
 
 PAL = set(RGB)
+# (file, tag) -> 0-based index of the impact frame (spec: swing 4th, swing_crit 5th, helper swing 3rd)
+IMPACT = {("Characters/repairman.aseprite", "swing"): 3, ("Characters/repairman.aseprite", "swing_crit"): 4,
+          ("Characters/helper.aseprite", "swing"): 2}
 
 
 def inspect(path):
@@ -84,7 +88,13 @@ def main():
                 if b - a + 1 != n:
                     errs.append(f"tag {tn} has {b - a + 1} frames, want {n}")
                 if ms and any(durs[i] != ms for i in range(a, b + 1)):
-                    errs.append(f"tag {tn} durations {durs[a:b + 1]} want {ms}")
+                    # per-frame timing may be redistributed for weight as long as the clip
+                    # length and the impact frame's start time stay what the spec implies
+                    total_ok = sum(durs[a:b + 1]) == n * ms
+                    imp = IMPACT.get((rel, tn))
+                    imp_ok = imp is None or sum(durs[a:a + imp]) == imp * ms
+                    if not (total_ok and imp_ok):
+                        errs.append(f"tag {tn} durations {durs[a:b + 1]} want {ms} (or same total/impact start)")
         elif tags == "item":
             if len(durs) > 1 and "idle" not in got:
                 errs.append("multi-frame item without idle tag")

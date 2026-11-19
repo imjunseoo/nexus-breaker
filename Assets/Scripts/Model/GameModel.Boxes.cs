@@ -117,8 +117,10 @@ namespace NexusBreaker
             AddItem(item.Id, 1);
             bool isNew = !Data.codex.Contains(item.Id);
             if (isNew) Data.codex.Add(item.Id);
+            RecordFound(item);
             Data.run.boxesOpened++;
             Data.lifetime.boxesOpened++;
+            OnContractEvent(ContractKind.OpenBoxes, g.ToString(), 1d);
 
             BoxOpened?.Invoke(item, grade, isNew);
             RaiseEconomyChanged();

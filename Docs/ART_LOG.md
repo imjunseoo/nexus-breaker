@@ -11,16 +11,16 @@
 ## 진행 상황
 | 분류 | 상태 |
 |---|---|
-| 캐릭터 repairman | ✅ 임시 확정(Claude 버전) — PixelLab 비교 대기 |
-| **전체** | **65/65 파일, verify.py 전부 OK (크기·태그·프레임 수·ms·32색 팔레트)** |
+| 캐릭터 repairman | ✅ 확정(Claude 버전) |
+| **전체** | **67/67 파일, verify.py 전부 OK (크기·태그·프레임 수·ms·32색 팔레트)** |
 | 캐릭터 helper | ✅ idle 4×160, swing 4×90(3번째=타격) |
 | 넥서스 | ✅ s0~s4_idle, hit, destroy |
 | 아이템 30 | ✅ (외계 6·??? 3종은 `idle` 4×150 발광 루프, 나머지 1프레임·태그 없음) |
 | 박스 5 | ✅ idle 2×300 / open 5×70 |
-| FX 6 | ✅ |
+| FX 7 | ✅ (v0.2 `fx_weakpoint` 추가) |
 | 손님 8 | ✅ walk 6×100 / idle 4×180 / buy 4×120 / reject 4×120 |
 | 환경 6 | ✅ bg_sky/far/mid/ground(가로 무한 타일), shop_stall(idle 4×200), props(9종) |
-| UI 7 (+ui_chat 추가 요청분) | ✅ |
+| UI 7 (+ui_chat 추가 요청분) | ✅ (v0.2 ui_icons 태그 4개 추가: contract·codex·weakpoint·check) |
 
 ## 애니메이션 메모 (코드 참고)
 - repairman (48×48, 피벗 바닥 중앙, 왼쪽을 봄)
@@ -41,6 +41,11 @@
   - `idle` 4×180 숨쉬기 + 4번째 눈 깜빡임 / `buy` 4×120: 끄덕 → 너트 동전 들어올림 → 반짝 → 끄덕 / `reject` 4×120: 고개 젓기 + 손바닥 들어 거절, 찡그림.
   - alien: 사람 옷(페도라·트렌치코트)을 어색하게 걸친 검은 실루엣, 눈만 네온 청록. cultist: 네온은 가슴의 넥서스 결정 펜던트만.
 - FX: `play` 태그는 1회 재생용(Loop 끄기). fx_debris는 태그 a~d 각 1프레임(파편 4종, 코드가 랜덤 선택).
+- fx_weakpoint (24×24, 피벗 중앙, v0.2): 넥서스 보라 결정 위에 겹치는 빛나는 균열. 1px 연청록 심 + 청록 테 + 자홍 체크무늬 광채 + 짙은 보라(`#1b0f3a`) 외곽선으로 결정 위에서도 또렷함. 균열 길이 약 13px, `loop`의 점선 표적 링은 지름 17~19px(화면 3배에서 약 51~57px).
+  - `spawn` 4×60: 빛 한 점 → 균열 반쪽 → 전체 균열 + 빛살 → 표적 링 등장(1회).
+  - `loop` 6×90(루프, 한 바퀴 540ms): 밝기 오르내림(심이 백색↔청록, 광채 켜짐/꺼짐)과 링 반지름 8↔9, 링 점선이 천천히 회전. 깜빡이는 대신 숨쉬듯 맥동.
+  - `break` 6×50: 백색 섬광 → 결정 파편 6조각 비산 + 퍼지는 링 → 불꽃 잔상(1회, 마지막 프레임 비어 있음 → 끝나면 숨김).
+  - `fade` 3×80: 광채 꺼짐 → 균열이 결정 색으로 아묾 → 작은 점 2개(1회).
 
 ## Unity 임포트 설정 제안 (메인 세션용)
 - 공통: PPU 32, Filter Point, Compression None. 색 모드 RGB, 반투명 픽셀 없음.
@@ -49,7 +54,7 @@
 - **Import Mode = Individual Layers**(레이어 = 스프라이트 1개)가 필요한 건 이제 `props`(소품 9종)뿐.
 - 방향: repairman·helper·customer_* 모두 **왼쪽을 보는 옆모습**(스펙 2-1·2-6). 오른쪽을 볼 땐 flipX.
 - 피벗: repairman/helper/customer_*/nexus = Bottom Center. 아이템·FX·UI = Center. bg_*·ground = Bottom Left 권장(타일링).
-- 루프: idle/walk/s*_idle = 루프, swing/swing_crit/cheer(1회), hit/destroy/open/play = 1회(Loop 끄기).
+- 루프: idle/walk/s*_idle = 루프, swing/swing_crit/cheer(1회), hit/destroy/open/play = 1회(Loop 끄기). fx_weakpoint는 `loop`만 루프, `spawn`/`break`/`fade`는 1회.
 
 ## 9-slice / 슬라이스
 9-slice 테두리는 코드가 런타임에 붙임(스펙 2-8). 그 폭에 맞춰 장식은 모서리 칸에만, 변은 늘어나는 방향으로 균일, 가운데는 단색으로 그림. 9-slice 늘림 시뮬레이션으로 확인함.
@@ -62,7 +67,7 @@ Unity Sprite Border 순서는 L, B, R, T (px). 파일 안에도 같은 값을 ce
 | ui_button | `normal` `hover` `pressed` | 5, 5, 5, 5 |
 | ui_slot | `empty` `selected` | 4, 4, 4, 4 |
 | ui_bar | `frame` `fill` | 2, 2, 2, 2 — `fill`은 프레임 안쪽(x 2~61, y 2~5)만 칠함 |
-| ui_icons (16×16) | `nut` `hammer` `helper` `speed` `crit` `box` `warehouse` `shelf` `customer` `shop` `settings` `prestige_core` `close` `pin` `ghost` | 없음 |
+| ui_icons (16×16) | `nut` `hammer` `helper` `speed` `crit` `box` `warehouse` `shelf` `customer` `shop` `settings` `prestige_core` `close` `pin` `ghost` + v0.2 `contract`(빨간 압정이 꽂힌 쪽지) `codex`(가죽 수첩·놋쇠 문양·끈) `weakpoint`(보라 결정 조각 위 빛나는 균열) `check`(청록 체크) — 기존 순서 유지, 뒤에 추가 | 없음 |
 | ui_nut_small (8×8) | (없음) | 없음 |
 | props (160×72) | 레이어·슬라이스 `car_wreck tire_stack oil_drum oil_drum_fallen sandbags road_sign traffic_cone scrap_pile lamp_post` (각 슬라이스 맨 아래 줄 = 지면 접점) | 없음 |
 - ui_button `pressed`는 면이 1px 내려앉은 모양(위쪽 그림자 줄) — 텍스트도 1px 내려주면 자연스러움.
@@ -84,9 +89,5 @@ Unity Sprite Border 순서는 L, B, R, T (px). 파일 안에도 같은 값을 ce
 - 넥서스 `hit`은 스펙대로 s0 기준 1세트. 실제 게임에선 현재 단계 스프라이트에 흰색 틴트(셰이더/Material)로 번쩍이는 편이 실루엣이 안 튐 — 제안.
 - 넥서스 결정 꼭대기를 y≈17로 낮춰서, 캔버스 바닥을 바닥선에 맞추면 96px 창 안에 다 들어옴(스펙 크기 80×96 그대로).
 
-## 남은 것
-- PixelLab 비교: `ArtSource/compare/pixellab/`이 아직 없음. 도착하면 `python ArtSource/tools/compare_sheet.py` → `ArtSource/compare/compare_sheet.png` + `compare_idle.gif` / `compare_swing.gif` 생성. 사용자가 고른 쪽을 repairman으로 확정.
-
-## 비교 테스트
-- Claude 버전: `ArtSource/compare/claude/` (repairman.aseprite, idle/swing 4배 GIF, 전체 시트)
-- PixelLab 버전 대기 중 → 도착하면 `ArtSource/compare/compare_sheet.png` 제작.
+## 결정
+- 수리공: Claude판 확정(2026-11-20), 비교 자료는 로컬 보관.

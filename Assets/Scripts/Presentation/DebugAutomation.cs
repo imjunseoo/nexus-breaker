@@ -69,6 +69,14 @@ namespace NexusBreaker
             m.PlaceOnShelf("melted_watch", 600);
             foreach (var id in new[] { "cup_ramen", "cigarettes", "battery", "diary", "melted_watch", "medkit", "warm_stone" })
                 if (!d.codex.Contains(id)) d.codex.Add(id);
+
+            // v0.2 의뢰: 하나는 완료, 하나는 진행 중으로 보여준다
+            m.FillContractsNow();
+            if (d.contracts.Count >= 2)
+            {
+                d.contracts[0].progress = d.contracts[0].goal;
+                d.contracts[1].progress = System.Math.Floor(d.contracts[1].goal * 0.6);
+            }
         }
 
         /// <summary>-nbTutorialStep n: 튜토리얼 n단계 화면을 바로 확인하기 위한 상태 준비.</summary>
@@ -88,11 +96,14 @@ namespace NexusBreaker
             "shop" => UiRoot.Page.Shop,
             "upgrade" => UiRoot.Page.Upgrade,
             "settings" => UiRoot.Page.Settings,
+            "contracts" => UiRoot.Page.Contracts,
+            "codex" => UiRoot.Page.Codex,
             _ => UiRoot.Page.None,
         };
 
         public static void AfterBuild(UiRoot ui)
         {
+            if (Flag("-nbMute")) AudioListener.volume = 0f; // 자동 검증 실행은 소리 없이
             var page = ParsePage(Arg("-nbPage"));
             // -nbPageAfter 초: 창을 옮긴 뒤 페이지를 여는 상황 재현용(창 위치 유지 검증)
             if (page != UiRoot.Page.None && float.TryParse(Arg("-nbPageAfter"), NumberStyles.Float, CultureInfo.InvariantCulture, out float after))
@@ -114,10 +125,23 @@ namespace NexusBreaker
                 return;
             }
 
+            // -nbWeakPoint 초: 그 시간 뒤 약점을 띄운다(스크린샷 확인용)
+            if (float.TryParse(Arg("-nbWeakPoint"), NumberStyles.Float, CultureInfo.InvariantCulture, out float wp))
+            {
+                var wg = new GameObject("DebugAutomationWeak");
+                wg.AddComponent<DebugAutomation>().StartCoroutine(WeakPointLater(wp));
+            }
+
             var shot = Arg("-nbShot");
             if (string.IsNullOrEmpty(shot)) return;
             var go = new GameObject("DebugAutomation");
             go.AddComponent<DebugAutomation>().StartCoroutine(ShotAndQuit(shot, delay));
+        }
+
+        static IEnumerator WeakPointLater(float after)
+        {
+            yield return new WaitForSecondsRealtime(after);
+            GameRoot.Instance?.Model.SpawnWeakPoint();
         }
 
         static IEnumerator OpenPageLater(UiRoot ui, UiRoot.Page page, float after)
@@ -146,6 +170,14 @@ namespace NexusBreaker
         static IEnumerator ShotAndQuit(string path, float delay)
         {
             yield return new WaitForSecondsRealtime(delay);
+            // -nbCodexItem id: 도감에서 그 물건을 고른 채로 찍기
+            var codexItem = Arg("-nbCodexItem");
+            if (!string.IsNullOrEmpty(codexItem) && CodexPage.Instance != null)
+            {
+                CodexPage.Instance.DebugSelect(codexItem);
+                yield return null;
+                yield return null;
+            }
             // -nbTooltip n: 상점 창고 n번 칸 툴팁을 띄운 채로 찍기
             if (int.TryParse(Arg("-nbTooltip"), out int tipIdx) && ShopPage.Instance != null)
             {

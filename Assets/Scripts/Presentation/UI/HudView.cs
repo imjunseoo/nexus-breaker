@@ -10,7 +10,9 @@ namespace NexusBreaker
         GameModel _model;
         UiRoot _root;
         RectTransform _hpFill;
-        TextMeshProUGUI _hpText, _nuts, _boxes, _event;
+        TextMeshProUGUI _hpText, _nuts, _boxes, _event, _contracts;
+        GameObject _contractBtn;
+        float _blink;
         Image _hpFillImg;
         float _barW;
         double _shownNuts;
@@ -65,6 +67,16 @@ namespace NexusBreaker
             _boxes.WithShadow();
             _boxes.rectTransform.Stretch();
 
+            // 의뢰(v0.2) → 클릭하면 의뢰 페이지
+            var cBtn = Ui.Button(rt, "Contracts", "", () => _root.TogglePage(UiRoot.Page.Contracts));
+            cBtn.GetComponent<Image>().color = new Color(1, 1, 1, 0f);
+            cBtn.GetComponent<RectTransform>().Place(194, 25, 110, 10);
+            _contracts = Ui.Text(cBtn.transform, "Text", "", Ui.SmallFont, Palette.Ash4);
+            _contracts.WithShadow();
+            _contracts.rectTransform.Stretch();
+            _contractBtn = cBtn.gameObject;
+            UiTargets.Register("hud_contracts", cBtn);
+
             // 오른쪽 위 아이콘 버튼
             UiTargets.Register("btn_shop", MakeIconButton(rt, "BtnShop", "shop", "상", 310, () => _root.TogglePage(UiRoot.Page.Shop)));
             UiTargets.Register("btn_upgrade", MakeIconButton(rt, "BtnUpgrade", "hammer", "강", 328, () => _root.TogglePage(UiRoot.Page.Upgrade)));
@@ -92,8 +104,28 @@ namespace NexusBreaker
             _shownNuts = System.Math.Abs(target - _shownNuts) < 1d ? target : _shownNuts + (target - _shownNuts) * System.Math.Min(1d, Time.deltaTime * 10d);
             _nuts.text = BigNum.Price(_shownNuts);
 
+            _blink += Time.unscaledDeltaTime;
             _refresh -= Time.deltaTime;
             if (_refresh <= 0f) { _refresh = 0.1f; Refresh(false); }
+        }
+
+        void RefreshContracts()
+        {
+            bool show = _model.ContractsUnlocked && !_model.Data.nexusDestroyed;
+            _contractBtn.SetActive(show);
+            if (!show) return;
+            int claim = _model.ClaimableContracts;
+            if (claim > 0)
+            {
+                // 보상 대기 중: 천천히 깜빡여서 눈에 띄게
+                bool on = Mathf.Repeat(_blink, 1.2f) < 0.8f;
+                _contracts.text = Ui.Colorize($"의뢰 완료 {claim}건! 보상 받기", on ? Palette.Lamp1 : Palette.Lamp0);
+                return;
+            }
+            double best = 0d;
+            foreach (var c in _model.Contracts)
+                if (!c.IsEmpty && c.goal > 0d) best = System.Math.Max(best, c.progress / c.goal);
+            _contracts.text = $"의뢰 진행 중 · 최고 {best * 100:0}%";
         }
 
         void Refresh(bool force)
@@ -112,6 +144,8 @@ namespace NexusBreaker
             string wh = _model.WarehouseFull ? Ui.Colorize($"창고 {_model.WarehouseUsed}/{_model.WarehouseCap}", Palette.Red3)
                                              : $"창고 {_model.WarehouseUsed}/{_model.WarehouseCap}";
             _boxes.text = $"{boxText} · {wh}";
+
+            RefreshContracts();
 
             var ev = _model.ActiveEvent;
             _event.text = ev != null ? $"[{ev.Title}] {ev.Description} ({BigNum.Duration(d.activeEventRemaining)})" : "";

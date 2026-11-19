@@ -206,5 +206,189 @@ namespace NexusBreaker.Tests
             Assert.AreEqual(3, back.boxes[2]);
             Assert.AreEqual("medkit", back.warehouse[0].id);
         }
+
+        // ───────────────────────── v0.2 ─────────────────────────
+
+        static GameModel AfterTutorial(int seed = 1)
+        {
+            var d = SaveData.NewGame();
+            d.tutorialStep = -1;
+            return new GameModel(d, new Rng(seed));
+        }
+
+        [Test]
+        public void WeakPoint_HitDealsBonusDamage_AndDropsBox()
+        {
+            var m = AfterTutorial();
+            m.SpawnWeakPoint();
+            Assert.IsTrue(m.WeakPointActive);
+            double hp = m.Data.nexusHp;
+            double expected = m.WeakPointDamage;
+            Assert.AreEqual(m.ClickDamage * Stats.WeakPointDamageMult, expected, 1e-9);
+
+            Assert.IsTrue(m.HitWeakPoint());
+            Assert.AreEqual(hp - expected, m.Data.nexusHp, 1e-6);
+            Assert.AreEqual(1, m.BoxCount);
+            Assert.IsFalse(m.WeakPointActive);
+            Assert.IsFalse(m.HitWeakPoint(), "한 번 깬 약점은 다시 못 깬다");
+            Assert.AreEqual(1, m.Data.lifetime.weakPoints);
+        }
+
+        [Test]
+        public void WeakPoint_ExpiresAfterLifetime()
+        {
+            var m = AfterTutorial();
+            bool expired = false;
+            m.WeakPointExpired += () => expired = true;
+            m.SpawnWeakPoint();
+            for (double t = 0; t < Stats.WeakPointLifetime + 0.5; t += 0.1) m.Tick(0.1);
+            Assert.IsFalse(m.WeakPointActive);
+            Assert.IsTrue(expired);
+        }
+
+        [Test]
+        public void WeakPoint_NeverSpawnsDuringTutorial()
+        {
+            var m = NewModel(3);
+            Assert.GreaterOrEqual(m.Data.tutorialStep, 0);
+            bool spawned = false;
+            m.WeakPointSpawned += () => spawned = true;
+            for (int i = 0; i < 2000; i++) m.Tick(0.5);
+            Assert.IsFalse(spawned);
+        }
+
+        [Test]
+        public void WeakPoint_SpawnsRegularly_AfterTutorial()
+        {
+            var m = AfterTutorial(4);
+            int spawns = 0;
+            m.WeakPointSpawned += () => spawns++;
+            for (int i = 0; i < 2 * 3600 * 2; i++) m.Tick(0.5); // 2시간
+            // 평균 간격 약 80초 + 수명 7초 → 2시간에 약 80번
+            Assert.Greater(spawns, 40);
+            Assert.Less(spawns, 160);
+        }
+
+        [Test]
+        public void Contracts_FillAfterTutorial_WithDistinctKinds()
+        {
+            var m = NewModel(5);
+            m.Tick(0.1);
+            foreach (var c in m.Contracts) Assert.IsTrue(c.IsEmpty, "튜토리얼 중에는 의뢰가 없다");
+
+            m.Data.tutorialStep = -1;
+            m.Tick(0.1);
+            Assert.AreEqual(Stats.ContractSlots, m.Contracts.Count);
+            var kinds = new System.Collections.Generic.HashSet<string>();
+            foreach (var c in m.Contracts)
+            {
+                Assert.IsFalse(c.IsEmpty);
+                Assert.Greater(c.goal, 0d);
+                Assert.IsTrue(c.rewardNuts > 0d || c.rewardBoxGrade >= 0, "보상이 있어야 한다");
+                Assert.IsFalse(string.IsNullOrEmpty(ContractText.Title(c)));
+                kinds.Add(c.kind);
+            }
+            Assert.AreEqual(Stats.ContractSlots, kinds.Count, "같은 종류 의뢰가 겹치지 않는다");
+        }
+
+        [Test]
+        public void Contracts_ClickContract_CompletesAndClaimsBox()
+        {
+            var m = AfterTutorial();
+            m.Data.contracts[0] = new ContractState { kind = "Clicks", goal = 3, rewardBoxGrade = (int)Grade.Rare };
+            int completed = -1;
+            m.ContractCompleted += i => completed = i;
+            for (int i = 0; i < 3; i++) m.Click();
+            Assert.IsTrue(m.Contracts[0].IsComplete);
+            Assert.AreEqual(0, completed);
+
+            int rareBefore = m.Data.boxes[(int)Grade.Rare];
+            Assert.IsTrue(m.ClaimContract(0));
+            Assert.AreEqual(rareBefore + 1, m.Data.boxes[(int)Grade.Rare]);
+            Assert.IsTrue(m.Contracts[0].IsEmpty);
+            Assert.AreEqual(1, m.Data.lifetime.contractsDone);
+            Assert.IsFalse(m.ClaimContract(0), "빈 칸은 받을 게 없다");
+
+            // 일정 시간 뒤 다시 채워진다
+            for (double t = 0; t < Stats.ContractRefillDelay + 1; t += 0.5) m.Tick(0.5);
+            Assert.IsFalse(m.Contracts[0].IsEmpty);
+        }
+
+        [Test]
+        public void Contracts_SellItem_ProgressFromSales_AndPaysNuts()
+        {
+            var m = AfterTutorial(6);
+            m.Data.contracts[0] = new ContractState { kind = "SellItem", target = "cup_ramen", goal = 2, rewardNuts = 500 };
+            m.Data.warehouse.Add(new ItemStack { id = "cup_ramen", count = 2 });
+            m.PlaceOnShelf("cup_ramen", 1);
+            m.PlaceOnShelf("cup_ramen", 1);
+            for (int i = 0; i < 2400 && !m.Contracts[0].IsComplete; i++) m.Tick(0.1);
+            Assert.IsTrue(m.Contracts[0].IsComplete);
+            double nuts = m.Data.nuts;
+            Assert.IsTrue(m.ClaimContract(0));
+            Assert.AreEqual(nuts + 500, m.Data.nuts, 1e-9);
+        }
+
+        [Test]
+        public void Contracts_Reroll_HasCooldown()
+        {
+            var m = AfterTutorial(7);
+            m.FillContractsNow();
+            string before = m.Contracts[1].kind;
+            Assert.IsTrue(m.RerollContract(1));
+            Assert.AreNotEqual(before, m.Contracts[1].kind);
+            Assert.IsFalse(m.RerollContract(2), "쿨다운 중");
+            for (double t = 0; t < Stats.ContractRerollCooldown + 1; t += 1) m.Tick(1);
+            Assert.IsTrue(m.RerollContract(2));
+        }
+
+        [Test]
+        public void Contracts_ResetOnPrestige()
+        {
+            var m = AfterTutorial(8);
+            m.FillContractsNow();
+            m.Data.nexusHp = 0; m.Data.nexusDestroyed = true;
+            Assert.IsTrue(m.Prestige());
+            foreach (var c in m.Contracts) Assert.IsTrue(c.IsEmpty);
+        }
+
+        [Test]
+        public void Codex_RecordsFoundAndSold()
+        {
+            var m = AfterTutorial(9);
+            m.Data.boxes[0] = 1;
+            var item = m.OpenBox(Grade.Common);
+            Assert.AreEqual(1, m.CodexOf(item.Id).found);
+            m.PlaceOnShelf(item.Id, 1);
+            for (int i = 0; i < 2400 && m.CodexOf(item.Id).sold == 0; i++) m.Tick(0.1);
+            Assert.AreEqual(1, m.CodexOf(item.Id).sold);
+            Assert.AreEqual(1d, m.CodexOf(item.Id).bestPrice);
+        }
+
+        [Test]
+        public void NiceRound_MakesReadableNumbers()
+        {
+            Assert.AreEqual(5d, GameModel.NiceRound(3));
+            Assert.AreEqual(45d, GameModel.NiceRound(43));
+            Assert.AreEqual(1200d, GameModel.NiceRound(1234));
+            Assert.AreEqual(57000d, GameModel.NiceRound(56789));
+        }
+
+        [Test]
+        public void SaveRoundTrip_PreservesV02Fields()
+        {
+            var m = AfterTutorial(10);
+            m.FillContractsNow();
+            m.Data.contracts[0].progress = 2;
+            m.Data.codexStats.Add(new CodexEntry { id = "medkit", found = 3, sold = 2, bestPrice = 900 });
+            m.Data.lifetime.weakPoints = 4;
+            string json = UnityEngine.JsonUtility.ToJson(m.Data);
+            var back = UnityEngine.JsonUtility.FromJson<SaveData>(json);
+            Assert.AreEqual(3, back.contracts.Count);
+            Assert.AreEqual(m.Data.contracts[0].kind, back.contracts[0].kind);
+            Assert.AreEqual(2d, back.contracts[0].progress);
+            Assert.AreEqual(900d, back.codexStats[0].bestPrice);
+            Assert.AreEqual(4, back.lifetime.weakPoints);
+        }
     }
 }

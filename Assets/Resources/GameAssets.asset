@@ -851,6 +851,67 @@ MonoBehaviour:
       - 0.08
       - 0.07000001
       - 0.00999999
+  - name: fx_weakpoint
+    defaultSprite: {fileID: -4370697591261316560, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+    clips:
+    - tag: break
+      frames:
+      - {fileID: -4370697591261316560, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -654922172686143820, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -3714181040820778879, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 7332564356909446930, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 5723705402440421527, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -4961706243640388178, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -4961706243640388178, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      durations:
+      - 0.050000012
+      - 0.050000012
+      - 0.050000012
+      - 0.050000012
+      - 0.049999952
+      - 0.04000002
+      - 0.00999999
+    - tag: fade
+      frames:
+      - {fileID: 2525400307547023567, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -4143795279993144997, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -7173545321078630572, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -7173545321078630572, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      durations:
+      - 0.07999992
+      - 0.08000004
+      - 0.06999999
+      - 0.010000005
+    - tag: loop
+      frames:
+      - {fileID: -5401461278800552177, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 8420707487419562734, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 6213679255877315146, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -8819877835544879186, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -7549908299230518076, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -6904461770573257768, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -6904461770573257768, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      durations:
+      - 0.09000002
+      - 0.089999974
+      - 0.08999999
+      - 0.09000003
+      - 0.089999974
+      - 0.07999998
+      - 0.00999999
+    - tag: spawn
+      frames:
+      - {fileID: 7409287699499207436, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: -582981638685757321, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 9119451808091933599, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 6364244152440417075, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      - {fileID: 6364244152440417075, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+      durations:
+      - 0.06
+      - 0.06
+      - 0.06000001
+      - 0.049999997
+      - 0.010000005
   - name: item_alien_remote
     defaultSprite: {fileID: 7597991043271578322, guid: f1fdbb1a3f5096142b1ed2badfe7d145, type: 3}
     clips:
@@ -1152,10 +1213,31 @@ MonoBehaviour:
       durations:
       - 0.09
       - 0.009999998
+    - tag: check
+      frames:
+      - {fileID: 8736923394880307412, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      - {fileID: 8736923394880307412, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
     - tag: close
       frames:
       - {fileID: 5837645329111831959, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
       - {fileID: 5837645329111831959, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+    - tag: codex
+      frames:
+      - {fileID: -3157771361670174197, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      - {fileID: -3157771361670174197, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+    - tag: contract
+      frames:
+      - {fileID: 6904845760656836987, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      - {fileID: 6904845760656836987, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
       durations:
       - 0.09
       - 0.009999998
@@ -1247,6 +1329,13 @@ MonoBehaviour:
       frames:
       - {fileID: 4243864899409382022, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
       - {fileID: 4243864899409382022, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+    - tag: weakpoint
+      frames:
+      - {fileID: -4436165280538559103, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+      - {fileID: -4436165280538559103, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
       durations:
       - 0.09
       - 0.009999998
@@ -2000,6 +2089,54 @@ MonoBehaviour:
     sprite: {fileID: 1466839289569506373, guid: fac401f1be52a944db18ebf8ac722cb8, type: 3}
   - name: fx_nut_sparkle/Frame_3
     sprite: {fileID: -650371833946196109, guid: fac401f1be52a944db18ebf8ac722cb8, type: 3}
+  - name: fx_weakpoint/break
+    sprite: {fileID: -4370697591261316560, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/fade
+    sprite: {fileID: 2525400307547023567, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/loop
+    sprite: {fileID: -5401461278800552177, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/spawn
+    sprite: {fileID: 7409287699499207436, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint
+    sprite: {fileID: -4370697591261316560, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_0
+    sprite: {fileID: 7409287699499207436, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_1
+    sprite: {fileID: -582981638685757321, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_10
+    sprite: {fileID: -4370697591261316560, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_11
+    sprite: {fileID: -654922172686143820, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_12
+    sprite: {fileID: -3714181040820778879, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_13
+    sprite: {fileID: 7332564356909446930, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_14
+    sprite: {fileID: 5723705402440421527, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_15
+    sprite: {fileID: -4961706243640388178, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_16
+    sprite: {fileID: 2525400307547023567, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_17
+    sprite: {fileID: -4143795279993144997, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_18
+    sprite: {fileID: -7173545321078630572, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_2
+    sprite: {fileID: 9119451808091933599, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_3
+    sprite: {fileID: 6364244152440417075, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_4
+    sprite: {fileID: -5401461278800552177, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_5
+    sprite: {fileID: 8420707487419562734, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_6
+    sprite: {fileID: 6213679255877315146, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_7
+    sprite: {fileID: -8819877835544879186, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_8
+    sprite: {fileID: -7549908299230518076, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
+  - name: fx_weakpoint/Frame_9
+    sprite: {fileID: -6904461770573257768, guid: 4367bf21d4026d148a46ef4b7d73c0ad, type: 3}
   - name: item_alien_remote/idle
     sprite: {fileID: 7597991043271578322, guid: f1fdbb1a3f5096142b1ed2badfe7d145, type: 3}
   - name: item_alien_remote
@@ -2286,8 +2423,14 @@ MonoBehaviour:
     sprite: {fileID: -477889152720017681, guid: 3aa901715885dc448a5ec31e2906a64a, type: 3}
   - name: ui_icons/box
     sprite: {fileID: -6140901724507736688, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/check
+    sprite: {fileID: 8736923394880307412, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/close
     sprite: {fileID: 5837645329111831959, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/codex
+    sprite: {fileID: -3157771361670174197, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/contract
+    sprite: {fileID: 6904845760656836987, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/crit
     sprite: {fileID: 3885318132083835909, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/customer
@@ -2314,6 +2457,8 @@ MonoBehaviour:
     sprite: {fileID: 3313137270806435317, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/warehouse
     sprite: {fileID: 4243864899409382022, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/weakpoint
+    sprite: {fileID: -4436165280538559103, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons
     sprite: {fileID: -6140901724507736688, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/Frame_1
@@ -2328,6 +2473,14 @@ MonoBehaviour:
     sprite: {fileID: 6085784193040985864, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/Frame_14
     sprite: {fileID: -218279713128593081, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/Frame_15
+    sprite: {fileID: 6904845760656836987, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/Frame_16
+    sprite: {fileID: -3157771361670174197, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/Frame_17
+    sprite: {fileID: -4436165280538559103, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
+  - name: ui_icons/Frame_18
+    sprite: {fileID: 8736923394880307412, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/Frame_2
     sprite: {fileID: 747637256639495739, guid: 966d8e41702628b42a5585585dd1ac7e, type: 3}
   - name: ui_icons/Frame_3
@@ -2383,6 +2536,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: decf4f10365ae34408d8e337ceed3d71, type: 3}
   - name: sfx_box_open_rare
     clip: {fileID: 8300000, guid: 0f5d17da02b9a924daeeee3b0b91b739, type: 3}
+  - name: sfx_contract_claim
+    clip: {fileID: 8300000, guid: f693557bca1ba154db1795f6da6f79b9, type: 3}
+  - name: sfx_contract_done
+    clip: {fileID: 8300000, guid: 986f12ca7e5959d449e879402d2c346b, type: 3}
   - name: sfx_customer_enter
     clip: {fileID: 8300000, guid: adbe3bee3ded4064e88cbf2e063bdb60, type: 3}
   - name: sfx_customer_reject
@@ -2437,6 +2594,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 3b833c8010bf77b4b9fb9126366b5a90, type: 3}
   - name: sfx_upgrade
     clip: {fileID: 8300000, guid: b4728bc254b98ca43a7b450b28e3eec1, type: 3}
+  - name: sfx_weakpoint_break
+    clip: {fileID: 8300000, guid: 1673391368cb52742b1317f7bd15d808, type: 3}
+  - name: sfx_weakpoint_spawn
+    clip: {fileID: 8300000, guid: 40de9c9bc5c6e01479b7522c71bd5683, type: 3}
   font: {fileID: 11400000, guid: a84efb2eaf3fe0b48972395fbbfb1712, type: 2}
   fontSmall: {fileID: 11400000, guid: fc27f14aa692f8b4e934ecda41ed680f, type: 2}
   fontTiny: {fileID: 11400000, guid: 0df74727b1c0ad0479a876ac123b5c5a, type: 2}

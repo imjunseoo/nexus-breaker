@@ -10,6 +10,7 @@ namespace NexusBreaker
     {
         GameModel _model;
         public NexusView Nexus { get; private set; }
+        public WeakPointView WeakPoint { get; private set; }
         public RepairmanView Repairman { get; private set; }
         readonly List<HelperView> _helpers = new List<HelperView>();
         readonly Dictionary<int, CustomerView> _customers = new Dictionary<int, CustomerView>();
@@ -41,6 +42,7 @@ namespace NexusBreaker
             _customerRoot = new GameObject("Customers").transform; _customerRoot.SetParent(transform, false);
 
             Nexus = NexusView.Create(transform, model);
+            WeakPoint = WeakPointView.Create(Nexus.transform, model);
             Repairman = RepairmanView.Create(transform, model);
             SyncHelpers();
 
@@ -62,6 +64,7 @@ namespace NexusBreaker
             model.CustomerResolved += OnCustomerResolved;
             model.Upgraded += OnUpgraded;
             model.Prestiged += OnPrestiged;
+            model.WeakPointBroken += OnWeakPointBroken;
         }
 
         void OnDestroy()
@@ -75,6 +78,7 @@ namespace NexusBreaker
             _model.CustomerResolved -= OnCustomerResolved;
             _model.Upgraded -= OnUpgraded;
             _model.Prestiged -= OnPrestiged;
+            _model.WeakPointBroken -= OnWeakPointBroken;
         }
 
         // ───────────────────────── 배경 ─────────────────────────
@@ -168,6 +172,13 @@ namespace NexusBreaker
         {
             var vel = new Vector3(Random.Range(-1.5f, 2.2f), Random.Range(1.2f, 3.0f), 0f) * strength;
             FxPiece.Debris(_fxRoot, p, vel, _debrisSprites[Random.Range(0, _debrisSprites.Length)], Random.Range(0.6f, 1.1f));
+        }
+
+        void OnWeakPointBroken(HitInfo h, Grade boxGrade)
+        {
+            var p = WeakPoint != null ? WeakPoint.WorldPos : WorldLayout.NexusCenter;
+            for (int i = 0; i < 12; i++) SpawnDebris(p + (Vector3)Random.insideUnitCircle * 0.2f, 1.5f);
+            FloatText?.Invoke(p + Vector3.up * 0.7f, "약점!", Palette.Cyan);
         }
 
         void OnStage(int stage)

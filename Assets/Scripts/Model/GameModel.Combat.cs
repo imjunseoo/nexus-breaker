@@ -54,6 +54,9 @@ namespace NexusBreaker
         public HitInfo Click()
         {
             if (Data.nexusDestroyed) return default;
+            Data.run.clicks++;
+            Data.lifetime.clicks++;
+            OnContractEvent(ContractKind.Clicks, null, 1d);
             return ApplyHit(HitSource.Click, -1);
         }
 

@@ -60,6 +60,7 @@ namespace NexusBreaker
             Rng = rng ?? new Rng();
             EnsureMarket();
             EnsureShelfSize();
+            EnsureContracts();
             for (int i = 0; i < _helperTimers.Length; i++) _helperTimers[i] = HelperSwingInterval * (0.3d + 0.15d * i);
             _swingTimer = 0.5d;
             _customerTimer = 2d;
@@ -113,8 +114,10 @@ namespace NexusBreaker
             Data.playTime += dt;
 
             TickCombat(dt);
+            TickWeakPoint(dt);
             TickCustomers(dt);
             TickMarket(dt);
+            TickContracts();
         }
 
         void RaiseEconomyChanged() => EconomyChanged?.Invoke();

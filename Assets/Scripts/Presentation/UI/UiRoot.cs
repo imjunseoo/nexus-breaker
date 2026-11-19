@@ -12,7 +12,7 @@ namespace NexusBreaker
     /// </summary>
     public class UiRoot : MonoBehaviour
     {
-        public enum Page { None, Shop, Upgrade, Settings }
+        public enum Page { None, Shop, Upgrade, Settings, Contracts, Codex }
 
         public static UiRoot Instance { get; private set; }
 
@@ -33,7 +33,12 @@ namespace NexusBreaker
         ShopPage _shop;
         UpgradePage _upgrade;
         SettingsPage _settings;
-        readonly Button[] _tabs = new Button[3];
+        ContractsPage _contracts;
+        CodexPage _codex;
+        static readonly string[] TabNames = { "상점", "강화", "의뢰", "도감", "설정" };
+        static readonly Page[] TabPages = { Page.Shop, Page.Upgrade, Page.Contracts, Page.Codex, Page.Settings };
+        readonly Button[] _tabs = new Button[TabPages.Length];
+        bool _contractHintShown;
 
         public RectTransform Frame => _frame;
         public int FrameHeightPx => WorldLayout.StripH + (PageOpen ? WorldLayout.PageH : 0);
@@ -94,12 +99,10 @@ namespace NexusBreaker
             var pageBg = Ui.Panel(_pageArea, "PageBg");
             pageBg.rectTransform.Stretch();
 
-            string[] tabNames = { "상점", "강화", "설정" };
-            Page[] tabPages = { Page.Shop, Page.Upgrade, Page.Settings };
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < TabPages.Length; i++)
             {
-                Page p = tabPages[i];
-                _tabs[i] = Ui.Button(_pageArea, "Tab" + i, tabNames[i], () => OpenPage(p));
+                Page p = TabPages[i];
+                _tabs[i] = Ui.Button(_pageArea, "Tab" + i, TabNames[i], () => OpenPage(p));
                 _tabs[i].GetComponent<RectTransform>().Place(4 + i * 42, 2, 40, 11);
             }
             var close = Ui.Button(_pageArea, "Close", GameAssets.Instance.UiIcon("close") != null ? "" : "×", ClosePage, GameAssets.Instance.UiIcon("close"));
@@ -114,6 +117,8 @@ namespace NexusBreaker
             _shop = ShopPage.Create(_pageContent, model);
             _upgrade = UpgradePage.Create(_pageContent, model);
             _settings = SettingsPage.Create(_pageContent, model, this);
+            _contracts = ContractsPage.Create(_pageContent, model);
+            _codex = CodexPage.Create(_pageContent, model);
 
             HudView.Create(_strip, model, this);
             Floating = FloatingTextLayer.Create(_strip, cam);
@@ -139,6 +144,9 @@ namespace NexusBreaker
             model.CustomerResolved += OnCustomerResolved;
             model.NexusDestroyed += OnNexusDestroyed;
             model.MarketEventStarted += ev => AudioManager.Instance?.Sfx("sfx_ui_open", 0.6f);
+            model.ContractCompleted += OnContractCompleted;
+            model.ContractClaimed += OnContractClaimed;
+            model.ContractsChanged += OnContractsChanged;
 
             ShowPage(Page.None);
             UpdateLayout();
@@ -179,8 +187,10 @@ namespace NexusBreaker
             _shop.gameObject.SetActive(p == Page.Shop);
             _upgrade.gameObject.SetActive(p == Page.Upgrade);
             _settings.gameObject.SetActive(p == Page.Settings);
+            _contracts.gameObject.SetActive(p == Page.Contracts);
+            _codex.gameObject.SetActive(p == Page.Codex);
             for (int i = 0; i < _tabs.Length; i++)
-                _tabs[i].GetComponent<Image>().color = (int)p - 1 == i ? Color.white : new Color(0.86f, 0.8f, 0.74f); // 너무 어두우면 짙은 글자가 묻힘
+                _tabs[i].GetComponent<Image>().color = TabPages[i] == p ? Color.white : new Color(0.86f, 0.8f, 0.74f); // 너무 어두우면 짙은 글자가 묻힘
             Tooltip.Instance?.Hide();
             PageChanged?.Invoke(p);
             UpdateLayout();
@@ -246,6 +256,29 @@ namespace NexusBreaker
                 case VisitOutcome.EmptyShelf:
                     Chat.Customer(v.Customer, Ui.Colorize("\"살 게 없네…\"", Palette.Ash3));
                     break;
+            }
+        }
+
+        void OnContractCompleted(int slot)
+        {
+            var c = _model.Contracts[slot];
+            Toast($"{Ui.Colorize("의뢰 완료", Palette.Lamp0)}: {ContractText.Title(c)} — 의뢰 탭에서 보상을 받자");
+        }
+
+        void OnContractClaimed(int slot, ContractState c)
+        {
+            Toast($"의뢰 보상 {Ui.Colorize(ContractText.Reward(c), Palette.Lamp1)}");
+        }
+
+        void OnContractsChanged()
+        {
+            if (_contractHintShown || _model.Data.lifetime.contractsDone > 0) return;
+            foreach (var c in _model.Contracts)
+            {
+                if (c.IsEmpty) continue;
+                _contractHintShown = true;
+                Toast($"{Ui.Colorize("의뢰", Palette.Lamp0)}가 들어왔다! 화면 위 '의뢰' 줄을 눌러 확인하자.");
+                return;
             }
         }
 

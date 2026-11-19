@@ -299,6 +299,160 @@ def level_up(t):
     return img
 
 
+# ------------------------------------------------------------------ weakpoint 24x24 (v0.2)
+# A glowing crack that opens on the nexus crystal: pale-cyan core, cyan rim, magenta glow, and a deep
+# violet outline so it reads on top of the purple crystal. A dashed target ring pulses in `loop`
+# (clickable at a glance, ~19px across). Pivot = centre (12, 12).
+WP_C = (12, 12)
+WP_MAIN = [(6, 18), (7, 16), (9, 15), (9, 13), (11, 12), (11, 10), (13, 9), (15, 8), (16, 6), (18, 5)]
+WP_BRANCH = [[(11, 12), (13, 13), (14, 15), (16, 15)], [(9, 15), (7, 13), (6, 13)], [(13, 9), (12, 7), (11, 6)]]
+
+
+def _dil(m, diag=True):
+    g = m.copy()
+    g[1:] |= m[:-1]; g[:-1] |= m[1:]; g[:, 1:] |= m[:, :-1]; g[:, :-1] |= m[:, 1:]
+    if diag:
+        g[1:, 1:] |= m[:-1, :-1]; g[1:, :-1] |= m[:-1, 1:]; g[:-1, 1:] |= m[1:, :-1]; g[:-1, :-1] |= m[1:, 1:]
+    return g
+
+
+def _poly_mask(pts, frac=1.0):
+    """core mask of a polyline, optionally only the middle `frac` of it."""
+    img = blank(24, 24)
+    segs = list(zip(pts, pts[1:]))
+    n = len(segs)
+    keep = range(int(round(n * (1 - frac) / 2)), n - int(round(n * (1 - frac) / 2)))
+    for i in keep:
+        (x0, y0), (x1, y1) = segs[i]
+        line(img, x0, y0, x1, y1, "E")
+    return img >= 0
+
+
+def _crack(core, core_k="E", rim_k="D", glow_k=None, outline_k="A", glow_mask=None):
+    """thin crack: 1px core, 1px rim (4-neighbours), checkered magenta glow, deep outline."""
+    img = blank(24, 24)
+    rim = _dil(core, diag=False) & ~core
+    glow = (_dil(core | rim, diag=False) & ~(core | rim)) if glow_k else np.zeros_like(core)
+    yy, xx = np.mgrid[0:24, 0:24]
+    glow &= (yy + xx) % 2 == 0
+    if glow_mask is not None:
+        glow &= glow_mask
+    body = core | rim | glow
+    if outline_k:
+        img[_dil(body, diag=False) & ~body] = K[outline_k]
+    img[glow] = K[glow_k] if glow_k else T
+    img[rim] = K[rim_k]
+    img[core] = K[core_k]
+    return img
+
+
+def _ring(img, r, key, phase=0, dash=3, gap=2):
+    """dashed circle: `dash` lit steps then `gap` empty steps, rotated by `phase` steps."""
+    cx, cy = WP_C
+    n = max(24, int(2 * math.pi * r))
+    for i in range(n):
+        if (i + phase) % (dash + gap) >= dash:
+            continue
+        a = 2 * math.pi * i / n
+        x, y = int(round(cx + math.cos(a) * r)), int(round(cy + math.sin(a) * r))
+        if 0 <= x < 24 and 0 <= y < 24 and img[y, x] < 0:
+            put(img, x, y, key)
+    return img
+
+
+def _rays(img, length, key):
+    cx, cy = WP_C
+    for dx, dy in ((1, -1), (-1, 1), (1, 1), (-1, -1)):
+        for t in range(3, 3 + length):
+            x, y = cx + dx * t, cy + dy * t
+            if img[y, x] < 0:
+                put(img, x, y, key)
+    return img
+
+
+def _shard(img, x, y, size):
+    """small crystal chip: violet body, cyan lit edge, deep outline."""
+    x, y = int(round(x)), int(round(y))
+    if size >= 2:
+        chip = P("""
+.AA.
+AECA
+ACBA
+.AA.
+""", 4)
+    else:
+        chip = P("""
+C
+""", 1)
+    blit(img, chip, x - chip.shape[1] // 2, y - chip.shape[0] // 2)
+    return img
+
+
+def weakpoint():
+    main_full = _poly_mask(WP_MAIN)
+    full = main_full.copy()
+    for b in WP_BRANCH:
+        full |= _poly_mask(b)
+    near_main = _dil(_dil(main_full))
+    tags = {}
+    # spawn: point of light -> crack splits -> light leaks -> target ring forms
+    f0 = blank(24, 24)
+    for (x, y, k) in ((12, 12, "l"), (11, 12, "E"), (13, 12, "E"), (12, 11, "E"), (12, 13, "E"),
+                      (10, 12, "D"), (14, 12, "D"), (12, 10, "D"), (12, 14, "D")):
+        put(f0, x, y, k)
+    f1 = _crack(_poly_mask(WP_MAIN, 0.5), "E", "D")
+    f2 = _crack(full, "l", "D", "F", glow_mask=near_main)
+    _rays(f2, 3, "F")
+    f3 = _crack(full, "E", "D", "F", glow_mask=near_main)
+    _ring(f3, 9, "D", 0)
+    tags["spawn"] = [f0, f1, f2, f3]
+    # loop: slow pulse (brightness up/down over 6 frames), ring breathes 8<->9 and creeps around
+    bright = [0, 1, 2, 2, 1, 0]
+    radius = [8, 8, 9, 9, 9, 8]
+    loop = []
+    for i, b in enumerate(bright):
+        f = _crack(full, "l" if b == 2 else "E", "D", "F" if b >= 1 else None,
+                   glow_mask=near_main if b < 2 else None)
+        if b == 2:
+            _rays(f, 2, "F")
+        _ring(f, radius[i], "F" if b >= 1 else "C", phase=i)
+        loop.append(f)
+    tags["loop"] = loop
+    # break: white-hot flash -> crystal shards fly out with an expanding ring -> sparks fade
+    brk = []
+    flash = _crack(_dil(full), "l", "E", "D")
+    _rays(flash, 5, "E")
+    brk.append(flash)
+    dirs = [(math.cos(a), math.sin(a)) for a in [k * math.pi / 3 + 0.3 for k in range(6)]]
+    for t, (r_sh, r_ring, size, crack_k) in enumerate(((6, 10, 2, "E"), (8.5, 11, 2, "D"), (10, None, 1, "C"),
+                                                        (11.2, None, 1, None), (None, None, 0, None))):
+        f = blank(24, 24)
+        if crack_k:
+            f = _crack(full if t == 0 else _poly_mask(WP_MAIN, 0.6), crack_k, "C" if t else "D", outline_k="A")
+        if r_ring:
+            _ring(f, r_ring, "E" if t == 0 else "D", phase=t, dash=4, gap=1)
+        if r_sh:
+            for k, (dx, dy) in enumerate(dirs):
+                rr = r_sh - (k % 2) * 1.2
+                _shard(f, WP_C[0] + dx * rr, WP_C[1] + dy * rr, size)
+        # sparks between the shards
+        for k, (dx, dy) in enumerate(dirs):
+            rr = (r_sh or 11.5) + 1.5
+            a = math.atan2(dy, dx) + 0.5
+            x, y = int(round(WP_C[0] + math.cos(a) * rr)), int(round(WP_C[1] + math.sin(a) * rr))
+            if 0 <= x < 24 and 0 <= y < 24 and f[y, x] < 0 and (t < 4 or k % 2 == 0):
+                put(f, x, y, "F" if t % 2 else "E")
+        brk.append(f)
+    tags["break"] = brk
+    # fade: glow dies, crack seals back into crystal colours, two last motes
+    fd0 = _crack(full, "D", "C", None)
+    fd1 = _crack(_poly_mask(WP_MAIN, 0.5), "C", "B", None)
+    fd2 = blank(24, 24)
+    put(fd2, 11, 12, "C"); put(fd2, 13, 10, "B")
+    tags["fade"] = [fd0, fd1, fd2]
+    return tags
+
+
 def build():
     out = []
     a = Asset("Assets/Art/FX/fx_hit_spark.aseprite", 16, 16, ["fx"]); a.tag("play", HIT, 50); out.append(a)
@@ -310,6 +464,11 @@ def build():
     a = Asset("Assets/Art/FX/fx_box_poof.aseprite", 24, 24, ["fx"]); a.tag("play", [poof(t) for t in range(5)], 60); out.append(a)
     a = Asset("Assets/Art/FX/fx_nut_sparkle.aseprite", 8, 8, ["fx"]); a.tag("play", NUT_SP, 80); out.append(a)
     a = Asset("Assets/Art/FX/fx_level_up.aseprite", 32, 32, ["fx"]); a.tag("play", [level_up(t) for t in range(6)], 60); out.append(a)
+    wp = weakpoint()
+    a = Asset("Assets/Art/FX/fx_weakpoint.aseprite", 24, 24, ["fx"])
+    for name, ms in (("spawn", 60), ("loop", 90), ("break", 50), ("fade", 80)):
+        a.tag(name, wp[name], ms)
+    out.append(a)
     for x in out:
         x.preview_bg = (70, 66, 72)
     return out

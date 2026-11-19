@@ -62,6 +62,11 @@ namespace NexusBreaker
                 else Sfx("sfx_customer_reject", 0.6f);
             };
             model.Prestiged += () => { Sfx("sfx_prestige"); Stinger("stinger_prestige"); };
+            // v0.2: 새 효과음이 아직 없으면 비슷한 기존 소리로 대신한다
+            model.WeakPointSpawned += () => SfxOr("sfx_weakpoint_spawn", "sfx_customer_enter", 0.5f);
+            model.WeakPointBroken += (h, g) => SfxOr("sfx_weakpoint_break", "sfx_nexus_crack", 1f);
+            model.ContractCompleted += _ => SfxOr("sfx_contract_done", "sfx_ui_open", 0.8f);
+            model.ContractClaimed += (i, c) => SfxOr("sfx_contract_claim", "sfx_upgrade", 0.9f);
         }
 
         AudioSource NewSource(string name, bool loop)
@@ -105,6 +110,11 @@ namespace NexusBreaker
             if (free == null) free = _sfx[Random.Range(0, _sfx.Count)];
             free.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
             free.PlayOneShot(clip, volume * _sfxVol);
+        }
+
+        public void SfxOr(string name, string fallback, float volume = 1f)
+        {
+            Sfx(GameAssets.Instance.Audio(name) != null ? name : fallback, volume);
         }
 
         void Stinger(string name)

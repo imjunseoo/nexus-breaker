@@ -335,9 +335,12 @@ class Asset:
         return len(self.frames) - 1
 
     def tag(self, name, frames, dur):
+        """dur: one ms value for every frame, or a list with one value per frame."""
         start = len(self.frames)
-        for f in frames:
-            self.add(f, dur)
+        durs = list(dur) if isinstance(dur, (list, tuple)) else [dur] * len(frames)
+        assert len(durs) == len(frames), (name, len(durs), len(frames))
+        for f, d in zip(frames, durs):
+            self.add(f, d)
         self.tags.append((name, start, len(self.frames) - 1))
 
     def flat(self, i, layers=None):

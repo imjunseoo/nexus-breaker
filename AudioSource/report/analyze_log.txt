@@ -2,31 +2,33 @@ C:\Users\imjun\NexusBreaker\AudioSource\nb\measure.py:77: UserWarning: nperseg=4
   f, p = signal.welch(m, SR, nperseg=4096)
 C:\Users\imjun\NexusBreaker\AudioSource\nb\measure.py:77: UserWarning: nperseg=4096 is greater than signal length max(len(x), len(y)) = 2646, using nperseg = 2646
   f, p = signal.welch(m, SR, nperseg=4096)
-C:\Users\imjun\NexusBreaker\AudioSource\analyze.py:58: UserWarning: nperseg=8192 is greater than signal length max(len(x), len(y)) = 4377, using nperseg = 4377
+C:\Users\imjun\NexusBreaker\AudioSource\analyze.py:66: UserWarning: nperseg=8192 is greater than signal length max(len(x), len(y)) = 4377, using nperseg = 4377
   f, p = signal.welch(m, SR, nperseg=8192)
-C:\Users\imjun\NexusBreaker\AudioSource\analyze.py:58: UserWarning: nperseg=8192 is greater than signal length max(len(x), len(y)) = 2646, using nperseg = 2646
+C:\Users\imjun\NexusBreaker\AudioSource\analyze.py:66: UserWarning: nperseg=8192 is greater than signal length max(len(x), len(y)) = 2646, using nperseg = 2646
   f, p = signal.welch(m, SR, nperseg=8192)
 name                          dur ch     TP  LUFS-I  LUFS-M   2-5k  5-10k   >10k   cent
-amb_nexus_hum               16.00  2  -15.2   -24.0   -21.4  -56.6  -77.1  -77.0     94
-   seam ch0: step 0.00009 (p99.9 0.00281, ratio 0.03) HF@seam vs median -0.4 dB, vs p95 -19.8 dB
-   seam ch1: step 0.00034 (p99.9 0.00299, ratio 0.11) HF@seam vs median +0.1 dB, vs p95 -19.4 dB
-amb_wasteland               60.00  2   -7.8   -24.0   -20.2  -28.3  -48.8  -72.7    194
-   seam ch0: step 0.00339 (p99.9 0.01300, ratio 0.26) HF@seam vs median -1.1 dB, vs p95 -8.5 dB
-   seam ch1: step 0.00470 (p99.9 0.01300, ratio 0.36) HF@seam vs median -1.9 dB, vs p95 -9.4 dB
-bgm_core                    74.67  2   -3.7   -18.0   -15.4  -18.4  -40.3  -73.0    358
-   seam ch0: step 0.00089 (p99.9 0.03128, ratio 0.03) HF@seam vs median -8.7 dB, vs p95 -23.4 dB
-   seam ch1: step 0.00143 (p99.9 0.04019, ratio 0.04) HF@seam vs median -13.3 dB, vs p95 -27.1 dB
-bgm_main                   102.86  2   -4.0   -18.0   -15.8  -14.8  -25.9  -50.8    477
-   seam ch0: step 0.00208 (p99.9 0.07227, ratio 0.03) HF@seam vs median +9.9 dB, vs p95 -1.7 dB
-   seam ch1: step 0.00006 (p99.9 0.06152, ratio 0.00) HF@seam vs median +5.5 dB, vs p95 -4.1 dB
-bgm_shop                    78.37  2   -4.6   -18.0   -15.7  -14.5  -28.1  -58.2    418
-   seam ch0: step 0.00269 (p99.9 0.04910, ratio 0.05) HF@seam vs median -10.5 dB, vs p95 -17.7 dB
-   seam ch1: step 0.00809 (p99.9 0.06024, ratio 0.13) HF@seam vs median -9.0 dB, vs p95 -16.8 dB
-stinger_prestige             8.57  2   -5.0   -17.0   -14.1  -11.8  -25.7  -42.9    562
+amb_nexus_hum               16.00  2  -15.1   -23.9   -21.4  -56.9  -77.4  -80.4     94
+   seam ch0: step 0.00040 (p99.9 0.00283, ratio 0.14) HF@seam vs median +4.2 dB, vs p95 -16.8 dB
+   seam ch1: step 0.00084 (p99.9 0.00298, ratio 0.28) HF@seam vs median +9.5 dB, vs p95 -11.4 dB
+amb_wasteland               60.00  2   -7.8   -24.1   -20.2  -28.6  -49.2  -73.9    192
+   seam ch0: step 0.00551 (p99.9 0.01272, ratio 0.43) HF@seam vs median -0.9 dB, vs p95 -8.3 dB
+   seam ch1: step 0.00729 (p99.9 0.01278, ratio 0.57) HF@seam vs median -1.6 dB, vs p95 -9.1 dB
+bgm_core                    74.67  2   -3.7   -18.0   -15.4  -18.4  -40.5  -73.7    357
+   seam ch0: step 0.00325 (p99.9 0.03098, ratio 0.10) HF@seam vs median -8.4 dB, vs p95 -23.2 dB
+   seam ch1: step 0.00344 (p99.9 0.04014, ratio 0.09) HF@seam vs median -13.4 dB, vs p95 -27.1 dB
+bgm_main                   102.86  2   -3.9   -18.0   -15.8  -15.0  -26.2  -51.1    472
+   seam ch0: step 0.00127 (p99.9 0.07132, ratio 0.02) HF@seam vs median +9.6 dB, vs p95 -1.8 dB
+   seam ch1: step 0.00060 (p99.9 0.06030, ratio 0.01) HF@seam vs median +5.6 dB, vs p95 -3.9 dB
+bgm_shop                    78.37  2   -4.6   -18.0   -15.7  -14.7  -28.4  -58.5    413
+   seam ch0: step 0.00180 (p99.9 0.04798, ratio 0.04) HF@seam vs median -10.5 dB, vs p95 -17.6 dB
+   seam ch1: step 0.00781 (p99.9 0.05858, ratio 0.13) HF@seam vs median -9.1 dB, vs p95 -16.7 dB
+stinger_prestige             8.57  2   -5.0   -16.9   -14.1  -11.8  -26.0  -43.1    557
 sfx_box_drop                 0.46  1   -6.3   -21.0   -21.0  -29.2  -48.0  -72.3    111
 sfx_box_open_alien           2.11  1  -10.0   -23.9   -19.0  -13.3  -44.2  -69.9    894
 sfx_box_open_common          0.86  1   -9.8   -22.8   -21.0   -7.5  -23.0  -58.5    814
 sfx_box_open_rare            1.78  1  -12.6   -23.3   -20.0  -22.3  -39.7  -71.2    838
+sfx_contract_claim           0.62  1   -6.1   -22.9   -21.0  -16.6  -60.5  -71.0   1047
+sfx_contract_done            1.35  1  -15.2   -26.6   -22.0  -36.9  -73.3  -69.5    841
 sfx_customer_enter           1.68  1  -12.8   -25.8   -22.0  -15.3  -69.3  -69.1   1071
 sfx_customer_reject          0.69  1  -14.7   -22.7   -22.0  -35.6  -70.4  -73.8    287
 sfx_error                    0.34  1  -11.5   -22.0   -22.0  -36.0  -64.2  -75.9    177
@@ -54,5 +56,7 @@ sfx_ui_close                 0.32  1  -14.3   -25.0   -25.0  -29.8  -54.7  -72.8
 sfx_ui_hover                 0.06  1  -13.9   -33.0   -33.0  -69.7  -67.6  -63.7   1041
 sfx_ui_open                  0.34  1  -14.6   -25.0   -25.0  -27.5  -48.6  -71.3    820
 sfx_upgrade                  1.45  1   -8.9   -22.7   -19.0  -13.9  -38.5  -70.5   1131
+sfx_weakpoint_break          1.60  1   -6.0   -19.5   -15.5  -15.8  -33.0  -73.3    737
+sfx_weakpoint_spawn          1.44  1  -19.7   -29.5   -26.0  -18.4  -60.1  -65.4    937
 
 ALL CHECKS PASSED

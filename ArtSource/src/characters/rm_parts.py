@@ -92,6 +92,7 @@ MASK = parse("""
 """)
 
 # ---- hammer heads (fill only), keyed by direction handle->head
+# default sledgehammer (the build in use)
 HEAD_U = parse("""
 .lkkkkkkkj.
 lkjjjjjjjih
@@ -119,26 +120,69 @@ iihhg
 ihhgg
 .hgg.
 """)
+# heavy maul variant (alternative, not in the game build): 13x7 block with collar band
+HEAD_U_HEAVY = parse("""
+.lkkkkhkkkkj.
+lkjjjjhjjjjih
+kjjjjjgjjjjih
+kjii5ighiiihg
+jiiiighhhh4hg
+ihhhhhghhhggg
+.hgggg2gggg2.
+""")
+HEAD_D_HEAVY = HEAD_U_HEAVY
+HEAD_L_HEAVY = parse("""
+.lkkjh.
+lkjjjih
+kjjjjih
+kjjiiih
+kjj5ihg
+kjjiihg
+hhggggg
+kjiiihg
+jjiii4g
+jiiihhg
+jiihhgg
+ihhhggg
+.hggg2.
+""")
+HEAVY = {"on": False}  # toggled by repairman.build_asset(heavy=...)
 import math
 
 
-def head_diag(ux, uy, cx, cy, length=10, width=5):
+def head_diag(ux, uy, cx, cy, length=None, width=None):
     """procedural rotated head; (ux,uy) = handle direction (grip->head)."""
+    heavy = HEAVY["on"]
+    length = length or (13 if heavy else 10)
+    width = width or (7 if heavy else 5)
     L = blank(48, 48)
     nx, ny = -uy, ux
     a = (cx - nx * length / 2, cy - ny * length / 2)
     b = (cx + nx * length / 2, cy + ny * length / 2)
-    thick_line(L, a[0], a[1], b[0], b[1], "kjjih"[:width])
+    thick_line(L, a[0], a[1], b[0], b[1], ("kkjjihg" if heavy else "kjjih")[:width])
+    if heavy:  # steel collar band across the middle of the head
+        hw = (width - 1) / 2.0
+        thick_line(L, cx - ux * hw, cy - uy * hw, cx + ux * hw, cy + uy * hw, "hg")
     return L
 
 
 def hammer_layer(gx, gy, hx, hy, head=None, hox=0, hoy=0):
     """Hammer from grip end (gx,gy) to head center (hx,hy). Returns outlined layer."""
+    heavy = HEAVY["on"]
     L = blank(48, 48)
-    thick_line(L, gx, gy, hx, hy, "64")
-    # grip tape: first 3px of handle -> red wrap
+    thick_line(L, gx, gy, hx, hy, "654" if heavy else "64")
     dx, dy = hx - gx, hy - gy
     n = math.hypot(dx, dy)
+    if heavy:  # iron collar where the handle enters the head
+        for t in range(int(n) - 6, int(n) - 3):
+            x, y = gx + dx * t / n, gy + dy * t / n
+            for ox in (-1, 0, 1):
+                for oy in (-1, 0, 1):
+                    xx, yy = round(x + ox * 0.6), round(y + oy * 0.6)
+                    k = get(L, xx, yy)
+                    if k in "654":
+                        put(L, xx, yy, {"6": "i", "5": "h", "4": "g"}[k])
+    # grip tape: first 3px of handle -> red wrap
     for t in range(0, 4):
         x = gx + dx * t / n
         y = gy + dy * t / n
@@ -148,6 +192,8 @@ def hammer_layer(gx, gy, hx, hy, head=None, hox=0, hoy=0):
                 k = get(L, xx, yy)
                 if k == "6":
                     put(L, xx, yy, "u" if t % 2 == 0 else "t")
+                elif k == "5":
+                    put(L, xx, yy, "t")
                 elif k == "4":
                     put(L, xx, yy, "t" if t % 2 == 0 else "s")
     if head is None:

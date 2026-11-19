@@ -54,3 +54,10 @@ __pycache__/
 
 .DS_Store
 Thumbs.db
+
+# 도트 비교·실험 자료(로컬 전용: 사용자 제공 참고 그림 포함 → 공개 저장소에 올리지 않음)
+/ArtSource/compare/*
+!/ArtSource/compare/claude/
+/ArtSource/previews/compare_pixellab/
+/ArtSource/previews/characters_heavy/
+/Art/

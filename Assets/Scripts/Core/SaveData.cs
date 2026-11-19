@@ -60,6 +60,36 @@ namespace NexusBreaker
         public double nutsEarned;
         public double bestSale;
         public string bestSaleItem;
+        public long clicks;           // 플레이어가 직접 때린 횟수 (v0.2)
+        public long weakPoints;       // 깬 약점 수 (v0.2)
+        public long contractsDone;    // 보상까지 받은 의뢰 수 (v0.2)
+    }
+
+    /// <summary>의뢰 한 칸. kind가 비어 있으면 빈 칸(readyAt 이후 새 의뢰가 생긴다).</summary>
+    [Serializable]
+    public class ContractState
+    {
+        public string kind;           // ContractKind 이름
+        public string target;         // 카테고리 / 아이템 id / 등급 번호 (종류에 따라)
+        public string requester;      // 의뢰한 손님 id(말투·이름용)
+        public double goal;
+        public double progress;
+        public double rewardNuts;
+        public int rewardBoxGrade = -1; // -1 = 박스 보상 없음
+        public double readyAt;        // 빈 칸일 때: 새 의뢰가 생기는 게임 시간(초)
+
+        public bool IsEmpty => string.IsNullOrEmpty(kind);
+        public bool IsComplete => !IsEmpty && progress >= goal;
+    }
+
+    /// <summary>도감 기록: 얻은 수·판 수·최고 판매가.</summary>
+    [Serializable]
+    public class CodexEntry
+    {
+        public string id;
+        public long found;
+        public long sold;
+        public double bestPrice;
     }
 
     [Serializable]
@@ -90,8 +120,13 @@ namespace NexusBreaker
         // 튜토리얼: 0부터 단계 진행, -1 = 완료 또는 건너뜀
         public int tutorialStep;
 
+        // 의뢰(v0.2): 항상 3칸
+        public List<ContractState> contracts = new List<ContractState>();
+        public double contractRerollAt;               // 이 게임 시간 이후 무료 바꾸기 가능
+
         // 기타
         public List<string> codex = new List<string>(); // 발견한 아이템 id
+        public List<CodexEntry> codexStats = new List<CodexEntry>(); // (v0.2) 아이템별 기록
         public double playTime;                        // 누적 게임 시간(초)
         public long lastSaveUnix;                      // 마지막 저장 UTC(초)
         public RunStats run = new RunStats();          // 이번 환생 회차 통계
